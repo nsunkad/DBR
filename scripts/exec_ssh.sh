@@ -12,7 +12,7 @@ if [ "$#" -eq 0 ]; then
     exit 1
 fi
 
-HOSTFILE="vms.dat"
+HOSTFILE="config/vms.dat"
 
 # Check if the host file exists.
 if [ ! -f "$HOSTFILE" ]; then

@@ -10,7 +10,7 @@ class RangeSetQuery(BaseQuery):
         self.range_start_key = range_start_key
         self.range_end_key = range_end_key
         self.status = QueryStatus.QUERY_CREATED
-        self.query_type = QueryType.RANGE_GET
+        self.query_type = QueryType.RANGE_SET
 
     def execute(self):
         """Executes a range get query and returns the corresponding value"""

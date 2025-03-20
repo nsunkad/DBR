@@ -15,4 +15,5 @@ def gen_venv(venv_dir="virtualenv"):
     print("Done")
 
 
-gen_venv()
+if __name__ == "__main__":
+    gen_venv()

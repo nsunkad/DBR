@@ -17,5 +17,5 @@ class DBREnvironment:
         else:
             raise KeyError(f"Key '{key}' not found in the dictionary.")
 
-    def __or__(self, other):
-        return
+    def __ior__(self, other):
+        self.env |= other.env

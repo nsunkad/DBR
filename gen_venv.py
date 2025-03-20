@@ -11,8 +11,7 @@ def gen_venv(venv_dir="virtualenv"):
 
     # Install dependencies
     pip_path = os.path.join(venv_dir, "bin", "pip")
-    packages = ["black", "mypy"]
-    subprocess.run([pip_path, "install"] + packages, check=True)
+    subprocess.check_call([pip_path, "install", "-r", "requirements.txt"])
     print("Done")
 
 

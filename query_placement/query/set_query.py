@@ -1,5 +1,5 @@
-from queryplacement.query.base_query import BaseQuery
-from queryplacement.utils.enums import QueryStatus, QueryType
+from query_placement.query.base_query import BaseQuery
+from query_placement.utils.enums import QueryStatus, QueryType
 
 
 class SetQuery(BaseQuery):

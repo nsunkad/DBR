@@ -2,9 +2,9 @@ import time
 from uuid import uuid4
 from pprint import pformat
 from asyncio import TaskGroup
-from queryplacement.dbr.dbr_environment import DBREnvironment
-from queryplacement.utils.enums import DBRStatus
-from queryplacement.utils.globals import LOGGER, CLIENT_LOCATION
+from query_placement.dbr.dbr_environment import DBREnvironment
+from query_placement.utils.enums import DBRStatus
+from query_placement.utils.globals import LOGGER, CLIENT_LOCATION
 
 
 # TODO: add static typing
@@ -16,8 +16,8 @@ class DBR:
     def __init__(
         self,
         name=None,
-        predecessors=None,
-        successors=None,
+        predecessor=None,
+        successor=None,
         environment=None,
     ):
         """
@@ -29,8 +29,8 @@ class DBR:
         self.name = name
         self.status = DBRStatus.DBR_CREATED
         self.queries = {}
-        self.predecessors = predecessors
-        self.successors = successors
+        self.predecessor = predecessor
+        self.successors = successor
         self.environment = environment
         self.location = None
 
@@ -75,13 +75,10 @@ class DBR:
     def _get_default_placement(self):
          # Default placement
         default_placement = CLIENT_LOCATION
-        # TODO: default placement at best predecessor
         
-        # for predecessor in self.predecessors:
-        #     default_placement = (
-        #         self.predecessor.location
-        #     )  # default scheduling at best predecessor, smart placement can change this        
-        
+        default_placement = (
+            self.predecessor.location
+        )
         return default_placement
 
     def _get_smart_placement(self):

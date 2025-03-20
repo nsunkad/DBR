@@ -16,7 +16,7 @@ class DBR:
     def __init__(
         self,
         name=None,
-        predecessor=None,
+        predecessor_location=None,
         successor=None,
         environment=None,
     ):
@@ -29,8 +29,8 @@ class DBR:
         self.name = name
         self.status = DBRStatus.DBR_CREATED
         self.queries = {}
-        self.predecessor = predecessor
-        self.successors = successor
+        self.predecessor_location = predecessor_location
+        self.successor = successor
         self.environment = environment
         self.location = None
 
@@ -61,12 +61,15 @@ class DBR:
             dbt.query.key: dbt.result() for dbt in dbtasks if dbt.result() is not None
         }
         self.environment |= DBREnvironment(results)
+        
+        # TODO: Decide successor placement here, immediately after current DBR fetches query results
+        # (now we know the input environment for sucessor and can determine which shards successor needs to access)
 
         time_difference = end_time - start_time
         LOGGER.info("Execution time: %s", time_difference)
 
-        for successor in self.successors:
-            successor.environment = self.environment
+        self.successor.environment = self.environment
+        self.successor.predecessor_location = self.location
         # TODO: Handle sink DBR case
         
         self.status = DBRStatus.DBR_SUCCESS
@@ -77,7 +80,7 @@ class DBR:
         default_placement = CLIENT_LOCATION
         
         default_placement = (
-            self.predecessor.location
+            self.predecessor_location
         )
         return default_placement
 

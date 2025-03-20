@@ -3,10 +3,13 @@ from dataclasses import dataclass
 
 @dataclass
 class DBREnvironment:
+    """
+    Wrapper for a dictionary mapping between fetched keys and associated values
+    """
     def __init__(self, env):
         self.env = env
 
-    def lookup_env(self, key):
+    def __getitem__(self, key):
         """Fetches value for associated key in environment
 
         Args:
@@ -18,4 +21,7 @@ class DBREnvironment:
             raise KeyError(f"Key '{key}' not found in the dictionary.")
 
     def __ior__(self, other):
-        self.env |= other.env
+        if isinstance(other, DBREnvironment):
+            self.env |= other.env
+        else:
+            raise TypeError("Not a DBREnvironment")

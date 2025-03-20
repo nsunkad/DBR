@@ -68,8 +68,9 @@ class DBR:
         time_difference = end_time - start_time
         LOGGER.info("Execution time: %s", time_difference)
 
-        self.successor.environment = self.environment
-        self.successor.predecessor_location = self.location
+        if self.successor:
+            self.successor.environment = self.environment
+            self.successor.predecessor_location = self.location
         # TODO: Handle sink DBR case
         
         self.status = DBRStatus.DBR_SUCCESS

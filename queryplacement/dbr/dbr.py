@@ -28,7 +28,7 @@ class DBR:
         self.id = uuid4()
         self.name = name
         self.status = DBRStatus.DBR_CREATED
-        self.queries = []
+        self.queries = {}
         self.predecessors = predecessors
         self.successors = successors
         self.environment = environment
@@ -38,14 +38,14 @@ class DBR:
         """
         Adds query to associated DBR. DBTs are constructed by the query
         """
-        self.queries.append(query)
+        self.queries[query.id] = query
 
     def remove_query(self, query) -> None:
         """
         Removes query from associated DBR
         """
-        if query in self.queries:
-            self.queries.pop(query)
+        if query.id in self.queries:
+            self.queries.pop(query.id)
 
     async def execute(self):
         self.status = DBRStatus.DBR_RUNNING
@@ -54,7 +54,7 @@ class DBR:
         # TODO: Smart placement, set self.location for DBR
         
         async with TaskGroup() as tg:
-            dbtasks = [tg.create_task(query.execute()) for query in self.queries]
+            dbtasks = [tg.create_task(query.execute()) for _, query in self.queries.items()]
 
         end_time = time.time()
         results = {

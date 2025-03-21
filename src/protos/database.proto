@@ -6,8 +6,7 @@ service Database {
   rpc SayHello (HelloRequest) returns (HelloReply);
   rpc Get (GetRequest) returns (GetReply);
   rpc Set (SetRequest) returns (SetReply);
-  rpc BatchGet (BatchGetRequest) returns (BatchGetReply);
-  rpc BatchSet (BatchSetRequest) returns (BatchSetReply);
+  rpc BatchGetSet (BatchGetSetRequest) returns (BatchGetSetReply);
 }
 
 message HelloRequest {
@@ -43,27 +42,19 @@ message SetReply {
   bool success = 1;
 }
 
-// ----- BatchGet Request/Reply -----
+// ----- BatchGetSet Request/Reply -----
 //
-// Retrieve multiple key-value pairs by providing multiple keys.
-message BatchGetRequest {
-  repeated bytes keys = 1; // list of keys to retrieve
+// Perform batch get and batch set operations simultaneously.
+message BatchGetSetRequest {
+  repeated bytes get_keys = 1; // keys to retrieve
+  repeated KeyValue set_pairs = 2; // key-value pairs to set
 }
 
-message BatchGetReply {
+message BatchGetSetReply {
   repeated KeyValue pairs = 1; // retrieved key-value pairs
+  bool success = 2;            // indicates if the batch set operation was successful
 }
 
-// ----- BatchSet Request/Reply -----
-//
-// Set multiple key-value pairs in a single operation.
-message BatchSetRequest {
-  repeated KeyValue pairs = 1; // list of key-value pairs to set
-}
-
-message BatchSetReply {
-  bool success = 1; // indicates if the batch set operation was successful
-}
 
 // ----- Key-Value Pair -----
 //

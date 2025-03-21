@@ -6,8 +6,8 @@ service Database {
   rpc SayHello (HelloRequest) returns (HelloReply);
   rpc Get (GetRequest) returns (GetReply);
   rpc Set (SetRequest) returns (SetReply);
-  rpc RangeGet (RangeGetRequest) returns (RangeGetReply);
-  rpc RangeSet (RangeSetRequest) returns (RangeSetReply);
+  rpc BatchGet (BatchGetRequest) returns (BatchGetReply);
+  rpc BatchSet (BatchSetRequest) returns (BatchSetReply);
 }
 
 message HelloRequest {
@@ -43,28 +43,26 @@ message SetReply {
   bool success = 1;
 }
 
-// ----- RangeGet Request/Reply -----
+// ----- BatchGet Request/Reply -----
 //
-// Retrieve a range of key-value pairs.
-// The range is defined by a start and end key (both 8 bytes).
-message RangeGetRequest {
-  bytes start_key = 1; // start key (inclusive)
-  bytes end_key = 2;   // end key (exclusive or defined by implementation)
+// Retrieve multiple key-value pairs by providing multiple keys.
+message BatchGetRequest {
+  repeated bytes keys = 1; // list of keys to retrieve
 }
 
-message RangeGetReply {
-  repeated KeyValue pairs = 1; // list of key-value pairs within the specified range
+message BatchGetReply {
+  repeated KeyValue pairs = 1; // retrieved key-value pairs
 }
 
-// ----- RangeSet Request/Reply -----
+// ----- BatchSet Request/Reply -----
 //
 // Set multiple key-value pairs in a single operation.
-message RangeSetRequest {
+message BatchSetRequest {
   repeated KeyValue pairs = 1; // list of key-value pairs to set
 }
 
-message RangeSetReply {
-  bool success = 1; // indicates if the range set operation was successful
+message BatchSetReply {
+  bool success = 1; // indicates if the batch set operation was successful
 }
 
 // ----- Key-Value Pair -----

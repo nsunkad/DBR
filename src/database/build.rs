@@ -1,5 +1,5 @@
-use std::{env, path::PathBuf};
 use protoc_bin_vendored::protoc_bin_path;
+use std::{env, path::PathBuf};
 use tonic_build::compile_protos;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {

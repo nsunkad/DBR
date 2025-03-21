@@ -14,7 +14,7 @@ def run():
     response = stub.SayHello(request)
     print("Server responded:", response.message)
 
-    request = database_pb2.SetRequest(key=b"key", value=b"value")
+    request = database_pb2.SetRequest(key=b"key", value=b"value2")
     response = stub.Set(request)
     print("Server responded:", response.success)
     

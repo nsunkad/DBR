@@ -1,27 +1,30 @@
 use crate::database;
 
 use tonic::{Request, Response, Status};
+use std::hash::{DefaultHasher, Hash, Hasher};
 use std::sync::Arc;
 use crate::kv_store::KvStore;
 use crate::types::Bytes;
+use crate::config::NUM_INSTANCES;
 
-
-use database::database_server::{Database, DatabaseServer};
+use database::database_server::{Database};
 use database::{
     HelloRequest, HelloReply,
     GetRequest, GetReply,
     SetRequest, SetReply,
     BatchGetSetRequest, BatchGetSetReply, KeyValue,
+    RegionRequest, ReadRegionReply, WriteRegionReply,
 };
 
 #[derive(Clone)]
 pub struct DB {
     pub store: Arc<dyn KvStore>,
+    pub vms: Vec<String>,
 }
 
 impl DB {
-    pub fn new(store: Arc<dyn KvStore>) -> Self {
-        Self { store }
+    pub fn new(store: Arc<dyn KvStore>, vms: Vec<String>) -> Self {
+        Self { store, vms }
     }
 }
 
@@ -65,5 +68,33 @@ impl Database for DB {
             .map(|(k, v)| KeyValue { key: k.0, value: v.0 })
             .collect();
         Ok(Response::new(BatchGetSetReply { pairs: result_pairs, success }))
+    }
+
+    async fn get_read_regions(&self, request: Request<RegionRequest>) -> Result<Response<ReadRegionReply>, Status> {
+        let key: Bytes = request.into_inner().key.into();
+        
+        let mut hasher = DefaultHasher::new();
+        key.hash(&mut hasher);
+        let hash_value = hasher.finish();
+
+        let regions = vec![
+            self.vms[((hash_value + 5) % NUM_INSTANCES) as usize].clone(),
+            self.vms[((hash_value + 10) % NUM_INSTANCES) as usize].clone(),
+            self.vms[((hash_value + 15) % NUM_INSTANCES) as usize].clone(),
+        ];
+
+        Ok(Response::new(ReadRegionReply { regions }))
+    }
+
+    async fn get_write_region(&self, request: Request<RegionRequest>) -> Result<Response<WriteRegionReply>, Status> {
+        let key: Bytes = request.into_inner().key.into();
+        
+        let mut hasher = DefaultHasher::new();
+        key.hash(&mut hasher);
+        let hash_value = hasher.finish();
+
+        let region = self.vms[(hash_value % NUM_INSTANCES) as usize].clone();
+
+        Ok(Response::new(WriteRegionReply { region }))        
     }
 }

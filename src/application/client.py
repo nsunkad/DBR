@@ -10,17 +10,34 @@ def run():
     stub = database_pb2_grpc.DatabaseStub(channel)
     
     # Create a HelloRequest message.
-    request = database_pb2.HelloRequest(name="World")
-    response = stub.SayHello(request)
-    print("Server responded:", response.message)
+    # request = database_pb2.HelloRequest(name="World")
+    # response = stub.SayHello(request)
+    # print("Server responded:", response.message)
 
-    request = database_pb2.SetRequest(key=b"key", value=b"value2")
-    response = stub.Set(request)
-    print("Server responded:", response.success)
+    # request = database_pb2.SetRequest(key=b"key", value=b"value2")
+    # response = stub.Set(request)
+    # print("Server responded:", response.success)
     
-    request = database_pb2.GetRequest(key=b"key")
-    response = stub.Get(request)
-    print("Server responded:", response.value)
+    # request = database_pb2.GetRequest(key=b"key")
+    # response = stub.Get(request)
+    # print("Server responded:", response.value)
+
+    request = database_pb2.RegionRequest(key=b"key")
+    
+    response = stub.GetWriteRegion(request)
+    print("Writer:", response.region)    
+
+    response = stub.GetReadRegions(request)
+    print("Readers:", response.regions)
+
+    request = database_pb2.RegionRequest(key=b"key2")
+    
+    response = stub.GetWriteRegion(request)
+    print("Writer:", response.region)    
+
+    response = stub.GetReadRegions(request)
+    print("Readers:", response.regions)
+
 
     
 

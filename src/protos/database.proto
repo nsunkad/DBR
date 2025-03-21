@@ -7,6 +7,8 @@ service Database {
   rpc Get (GetRequest) returns (GetReply);
   rpc Set (SetRequest) returns (SetReply);
   rpc BatchGetSet (BatchGetSetRequest) returns (BatchGetSetReply);
+  rpc GetReadRegions (RegionRequest) returns (ReadRegionReply);
+  rpc GetWriteRegion (RegionRequest) returns (WriteRegionReply);
 }
 
 message HelloRequest {
@@ -53,6 +55,22 @@ message BatchGetSetRequest {
 message BatchGetSetReply {
   repeated KeyValue pairs = 1; // retrieved key-value pairs
   bool success = 2;            // indicates if the batch set operation was successful
+}
+
+
+// ----- Region Request/Replies -----
+//
+// Get regions for read/write operations.
+message RegionRequest {
+  bytes key = 1;
+}
+
+message ReadRegionReply {
+  repeated string regions = 1; // read region address (typically 3)
+}
+
+message WriteRegionReply {
+   string region = 1; // write region address 
 }
 
 

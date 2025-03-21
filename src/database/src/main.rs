@@ -1,6 +1,7 @@
 mod database;
 mod kv_store;
 mod service;
+mod types;
 
 use std::sync::Arc;
 use tonic::transport::Server;

@@ -1,9 +1,10 @@
 use crate::database;
 
 use tonic::{Request, Response, Status};
-use async_trait::async_trait;
 use std::sync::Arc;
-use crate::kv_store::{KvStore, Bytes};
+use crate::kv_store::KvStore;
+use crate::types::Bytes;
+
 
 use database::database_server::{Database, DatabaseServer};
 use database::{

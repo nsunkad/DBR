@@ -4,6 +4,10 @@ package database;
 
 service Database {
   rpc SayHello (HelloRequest) returns (HelloReply);
+  rpc Get (GetRequest) returns (GetReply);
+  rpc Set (SetRequest) returns (SetReply);
+  rpc RangeGet (RangeGetRequest) returns (RangeGetReply);
+  rpc RangeSet (RangeSetRequest) returns (RangeSetReply);
 }
 
 message HelloRequest {
@@ -12,4 +16,61 @@ message HelloRequest {
 
 message HelloReply {
   string message = 1;
+}
+
+// ----- Get Request/Reply -----
+//
+// Get a value from the database by providing a key.
+message GetRequest {
+  bytes key = 1;
+}
+
+// Returned value, as raw bytes
+message GetReply {
+  bytes value = 1; 
+}
+
+// ----- Set Request/Reply -----
+//
+// Set a value in the database for a given key.
+message SetRequest {
+  bytes key = 1;   // key must be 8 bytes
+  bytes value = 2; // value to be stored
+}
+
+// indicates if the set operation was successful
+message SetReply {
+  bool success = 1;
+}
+
+// ----- RangeGet Request/Reply -----
+//
+// Retrieve a range of key-value pairs.
+// The range is defined by a start and end key (both 8 bytes).
+message RangeGetRequest {
+  bytes start_key = 1; // start key (inclusive)
+  bytes end_key = 2;   // end key (exclusive or defined by implementation)
+}
+
+message RangeGetReply {
+  repeated KeyValue pairs = 1; // list of key-value pairs within the specified range
+}
+
+// ----- RangeSet Request/Reply -----
+//
+// Set multiple key-value pairs in a single operation.
+message RangeSetRequest {
+  repeated KeyValue pairs = 1; // list of key-value pairs to set
+}
+
+message RangeSetReply {
+  bool success = 1; // indicates if the range set operation was successful
+}
+
+// ----- Key-Value Pair -----
+//
+// A simple message to hold a key-value pair.
+message KeyValue {
+  bytes key = 1;   // key must be 8 bytes
+  bytes value = 2; // corresponding value
 }

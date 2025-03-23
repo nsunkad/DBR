@@ -3,9 +3,9 @@ use crate::database;
 use tonic::{Request, Response, Status};
 use std::hash::{DefaultHasher, Hash, Hasher};
 use std::sync::Arc;
-use crate::kv_store::KvStore;
+use crate::kv_store::InMemoryStore;
 use crate::types::Bytes;
-use crate::config::NUM_INSTANCES;
+use crate::config::{NUM_INSTANCES, REPLICATION_FACTOR};
 
 use database::database_server::{Database};
 use database::{
@@ -18,12 +18,12 @@ use database::{
 
 #[derive(Clone)]
 pub struct DB {
-    pub store: Arc<dyn KvStore>,
+    pub store: Arc<InMemoryStore>,
     pub vms: Vec<String>,
 }
 
 impl DB {
-    pub fn new(store: Arc<dyn KvStore>, vms: Vec<String>) -> Self {
+    pub fn new(store: Arc<InMemoryStore>, vms: Vec<String>) -> Self {
         Self { store, vms }
     }
 }
@@ -77,10 +77,13 @@ impl Database for DB {
         key.hash(&mut hasher);
         let hash_value = hasher.finish();
 
+        const OFFSET: u64 = NUM_INSTANCES / (REPLICATION_FACTOR+1);
+        
+        // Get the three regions for the key
         let regions = vec![
-            self.vms[((hash_value + 5) % NUM_INSTANCES) as usize].clone(),
-            self.vms[((hash_value + 10) % NUM_INSTANCES) as usize].clone(),
-            self.vms[((hash_value + 15) % NUM_INSTANCES) as usize].clone(),
+            self.vms[((hash_value + 1*OFFSET) % NUM_INSTANCES) as usize].clone(),
+            self.vms[((hash_value + 2*OFFSET) % NUM_INSTANCES) as usize].clone(),
+            self.vms[((hash_value + 3*OFFSET) % NUM_INSTANCES) as usize].clone(),
         ];
 
         Ok(Response::new(ReadRegionReply { regions }))

@@ -3,19 +3,6 @@ use std::collections::HashMap;
 use tokio::sync::RwLock;
 use crate::types::Bytes;
 
-/// A trait for a simple asynchronous key–value store.
-#[async_trait]
-pub trait KvStore: Send + Sync {
-    async fn get(&self, key: &Bytes) -> Option<Bytes>;
-    async fn set(&self, key: &Bytes, value: &Bytes);
-    async fn batch_get_set(
-        &self,
-        get_keys: Vec<Bytes>,
-        set_pairs: Vec<(Bytes, Bytes)>
-    ) -> (Vec<(Bytes, Bytes)>, bool);
-}
-
-/// An in‑memory implementation using a Tokio‑protected HashMap.
 pub struct InMemoryStore {
     pub map: RwLock<HashMap<Bytes, Bytes>>,
 }
@@ -26,21 +13,18 @@ impl InMemoryStore {
             map: RwLock::new(HashMap::new()),
         }
     }
-}
-
-#[async_trait]
-impl KvStore for InMemoryStore {
-    async fn get(&self, key: &Bytes) -> Option<Bytes> {
+    
+    pub async fn get(&self, key: &Bytes) -> Option<Bytes> {
         let map = self.map.read().await;
         map.get(key).cloned()
     }
 
-    async fn set(&self, key: &Bytes, value: &Bytes) {
+    pub async fn set(&self, key: &Bytes, value: &Bytes) {
         let mut map = self.map.write().await;
         map.insert(key.clone(), value.clone());
     }
 
-    async fn batch_get_set(
+    pub async fn batch_get_set(
         &self,
         get_keys: Vec<Bytes>,
         set_pairs: Vec<(Bytes, Bytes)>

@@ -7,7 +7,7 @@ mod config;
 use std::{env, fs, sync::Arc};
 use tonic::transport::Server;
 use service::DB;
-use kv_store::{KvStore, InMemoryStore};
+use kv_store::InMemoryStore;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -28,7 +28,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = config::ADDR.parse()?;
     println!("Server listening on {}", addr);
 
-    let store: Arc<dyn KvStore> = Arc::new(InMemoryStore::new());
+    let store: Arc<InMemoryStore> = Arc::new(InMemoryStore::new());
     let db_service = DB::new(store, vms);
 
     Server::builder()

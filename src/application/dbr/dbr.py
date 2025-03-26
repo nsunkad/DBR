@@ -2,9 +2,9 @@ import time
 from uuid import uuid4
 from pprint import pformat
 from asyncio import TaskGroup
-from query_placement.dbr.dbr_environment import DBREnvironment
-from query_placement.utils.enums import DBRStatus
-from query_placement.utils.globals import LOGGER, CLIENT_LOCATION
+from application.dbr.dbr_environment import DBREnvironment
+from application.utils.enums import DBRStatus
+from application.utils.globals import LOGGER, CLIENT_LOCATION
 
 
 # TODO: add static typing

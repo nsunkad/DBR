@@ -1,6 +1,5 @@
 use protoc_bin_vendored::protoc_bin_path;
-use std::{env, path::PathBuf};
-use tonic_build::compile_protos;
+use std::{env};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Get the path to the vendored protoc binary.

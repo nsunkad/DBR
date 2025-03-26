@@ -6,7 +6,6 @@ service Database {
   rpc SayHello (HelloRequest) returns (HelloReply);
   rpc Get (GetRequest) returns (GetReply);
   rpc Set (SetRequest) returns (SetReply);
-  rpc BatchGetSet (BatchGetSetRequest) returns (BatchGetSetReply);
   rpc GetReadRegions (RegionRequest) returns (ReadRegionReply);
   rpc GetWriteRegion (RegionRequest) returns (WriteRegionReply);
 }
@@ -43,20 +42,6 @@ message SetRequest {
 message SetReply {
   bool success = 1;
 }
-
-// ----- BatchGetSet Request/Reply -----
-//
-// Perform batch get and batch set operations simultaneously.
-message BatchGetSetRequest {
-  repeated bytes get_keys = 1; // keys to retrieve
-  repeated KeyValue set_pairs = 2; // key-value pairs to set
-}
-
-message BatchGetSetReply {
-  repeated KeyValue pairs = 1; // retrieved key-value pairs
-  bool success = 2;            // indicates if the batch set operation was successful
-}
-
 
 // ----- Region Request/Replies -----
 //

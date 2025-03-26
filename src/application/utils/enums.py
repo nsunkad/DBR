@@ -28,8 +28,6 @@ class QueryType(Enum):
     """
     GET = 1
     SET = 2
-    RANGE_GET = 3
-    RANGE_SET = 4
 
 
 class QueryStatus(Enum):

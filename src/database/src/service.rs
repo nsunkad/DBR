@@ -12,7 +12,7 @@ use database::{
     HelloRequest, HelloReply,
     GetRequest, GetReply,
     SetRequest, SetReply,
-    BatchGetSetRequest, BatchGetSetReply, KeyValue,
+    KeyValue,
     RegionRequest, ReadRegionReply, WriteRegionReply,
 };
 
@@ -53,23 +53,6 @@ impl Database for DB {
         self.store.set(&key, &value).await;
         Ok(Response::new(SetReply { success: true }))
     }
-    
-    async fn batch_get_set(&self, request: Request<BatchGetSetRequest>) -> Result<Response<BatchGetSetReply>, Status> {
-        let req = request.into_inner();
-        // Convert get_keys from Vec<Vec<u8>> to Vec<Bytes>
-        let get_keys: Vec<Bytes> = req.get_keys.into_iter().map(Bytes).collect();
-        // Convert set_pairs from Vec<KeyValue> to Vec<(Bytes, Bytes)>
-        let set_pairs: Vec<(Bytes, Bytes)> = req.set_pairs.into_iter()
-            .map(|kv| (Bytes(kv.key), Bytes(kv.value)))
-            .collect();
-        let (pairs, success) = self.store.batch_get_set(get_keys, set_pairs).await;
-        // Convert result pairs back into Vec<KeyValue>
-        let result_pairs = pairs.into_iter()
-            .map(|(k, v)| KeyValue { key: k.0, value: v.0 })
-            .collect();
-        Ok(Response::new(BatchGetSetReply { pairs: result_pairs, success }))
-    }
-
     async fn get_read_regions(&self, request: Request<RegionRequest>) -> Result<Response<ReadRegionReply>, Status> {
         let key: Bytes = request.into_inner().key.into();
         

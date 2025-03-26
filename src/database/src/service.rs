@@ -12,7 +12,6 @@ use database::{
     HelloRequest, HelloReply,
     GetRequest, GetReply,
     SetRequest, SetReply,
-    KeyValue,
     RegionRequest, ReadRegionReply, WriteRegionReply,
 };
 

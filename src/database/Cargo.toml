@@ -1,0 +1,16 @@
+[package]
+name = "database"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1", features = ["full"] }
+prost = "0.13.3"
+prost-types = "0.13.3"
+tonic = "0.12.3"
+async-trait = "0.1.88"
+sled = "0.34.7"
+
+[build-dependencies]
+tonic-build = { version = "0.8", features = ["prost"] }
+protoc-bin-vendored = "3.1.0"

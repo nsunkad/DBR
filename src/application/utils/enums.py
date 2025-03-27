@@ -9,6 +9,7 @@ class Placement(Enum):
 
     DEFAULT = 1
     SMART = 2
+    BRUTE = 3
 
 
 class DBRStatus(Enum):

@@ -2,6 +2,9 @@
 # Once DBR recieved, smart placement [placement.py]
 import sys
 import os
+import grpc
+import signal
+from concurrent import futures
 
 from orchestration.placement import placeDBR
 
@@ -11,31 +14,32 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 
 # Now import from generated
 from generated import dbr_pb2 
+from generated import dbr_pb2_grpc 
 from application.utils.enums import Placement
 
-# -------------------------------------------------------
-# this is what application layer would be doing
-# and then sending the .serialized over RPC
-dbr = dbr_pb2.DBR()
-dbr.id = "dbr-1234"
-dbr.name = "TestDBR"
-dbr.status = dbr_pb2.DBRStatus.DBR_CREATED
+class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
+    def Send(self, request, context):
+        print("Processing DBR")
+        # how are we going to decide per DBR placement?
+        example_setting = Placement.DEFAULT
 
-query = dbr.queries.add()
-query.key = b"user:123"
-query.status = dbr_pb2.QueryStatus.QUERY_CREATED
+        # TODO: eventually forwards DBR to this ip 
+        print(placeDBR(request, example_setting))
+        
+        return dbr_pb2.DBRReply(success=True)
 
-dbr.predecessor_location = "127.0.0.1"
-dbr.successor = "DBR-2345"
+def serve():
+    # NOTE: Is 10 correct/ok to be hard coded?
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-kv = dbr.environment.add()
-kv.key = b"env_key"
-kv.value = b"env_value"
-serialized_dbr = dbr.SerializeToString()
-# -------------------------------------------------------
-# need to add networking/listening code
-# but jist is service.py recieves serialized_dbr
-received_dbr = dbr_pb2.DBR()
-received_dbr.ParseFromString(serialized_dbr)
-example_setting = Placement.DEFAULT
-print(placeDBR(received_dbr, example_setting))
+    dbr_pb2_grpc.add_DBRMsgServicer_to_server(DBRServicer(), server)
+    port = 50052 
+    server.add_insecure_port(f'127.0.0.1:{port}')
+    server.start()
+    print(f"Server started, listening on port {port}")
+
+    # Block until server is terminated, graceful shutdown
+    server.wait_for_termination()
+
+if __name__ == '__main__':
+    serve()

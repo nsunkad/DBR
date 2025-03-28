@@ -1,10 +1,9 @@
 # Placement Service
 from application.utils.enums import Placement
-def placeDBR(place: Placement):
+def placeDBR(dbr, place: Placement):
     if place == Placement.DEFAULT:
         # return client IP, predecessor location
-        return 0 
-
+        return dbr.predecessor_location 
     # these are very similar to could also be collapsed
     # into a single else statement and then SMART/BRUTE
     # just decides # of candidate points (few or all) 

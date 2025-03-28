@@ -1,10 +1,7 @@
-import "database.proto"
+syntax = "proto3";
 
-syntax = "proto3"
-
-service DBR {
-    rpc Send (DBR) returns (DBRStatus);
-}
+// used for KeyValue 
+import "database.proto";
 
 enum DBRStatus {
     // necessary in proto3
@@ -15,6 +12,10 @@ enum DBRStatus {
     DBR_FAILED = 4; 
 }
 
+service DBRMsg {
+    rpc Send (DBR) returns (DBRReply);
+}
+
 enum QueryStatus {
    // necessary in proto3
    QUERY_UNKNOWN = 0;
@@ -22,6 +23,10 @@ enum QueryStatus {
    QUERY_RUNNING = 2;
    QUERY_SUCCESS = 3;
    QUERY_FAILED = 4;
+}
+
+message DBRReply {
+    bool success = 1;
 }
 
 // QueryType should be obvious
@@ -44,10 +49,10 @@ message DBR {
     string successor = 6;
 
     // KeyValue comes from "database.proto"
-    repeated KeyValue environment = 7;
+    repeated database.KeyValue environment = 7;
 
     // serialized business logic in between DBRs
-    bytes logic_function = 8;
+    optional bytes logic_function = 8;
 
     // when sending DBR to orchestration 
     // app layer doesn't know location

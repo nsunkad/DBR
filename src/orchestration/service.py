@@ -3,12 +3,14 @@
 import sys
 import os
 
+from orchestration.placement import placeDBR
+
 # Add the src directory to the Python path
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# import sys, os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'generated')))
 
 # Now import from generated
 from generated import dbr_pb2 
-from placement import placeDBR
 from application.utils.enums import Placement
 
 # -------------------------------------------------------

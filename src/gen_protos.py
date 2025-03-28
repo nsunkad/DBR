@@ -12,16 +12,16 @@ def gen_protos():
     proto_include = os.path.abspath(os.path.join(os.path.dirname(__file__), "protos"))
     proto_files = [os.path.join(proto_include, target) for target in TARGETS]
 
-    out_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), OUT_DIR))
-    os.makedirs(out_dir, exist_ok=True)
+    if not os.path.exists(OUT_DIR):
+        os.makedirs(OUT_DIR)
     
     # Build the argument list similar to:
     # python -m grpc_tools.protoc -I../protos --python_out=. --grpc_python_out=. ../protos/database.proto
     protoc_args = [
         "",  # Dummy entry for the program name
         f"-I{proto_include}",
-        f"--python_out={out_dir}",
-        f"--grpc_python_out={out_dir}",
+        f"--python_out=./{OUT_DIR}",
+        f"--grpc_python_out=./{OUT_DIR}",
         *proto_files,
     ]
     

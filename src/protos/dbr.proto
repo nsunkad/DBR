@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package generated;
+
 // used for KeyValue 
 import "database.proto";
 
@@ -49,7 +51,7 @@ message DBR {
     string successor = 6;
 
     // KeyValue comes from "database.proto"
-    repeated database.KeyValue environment = 7;
+    repeated KeyValue environment = 7;
 
     // serialized business logic in between DBRs
     optional bytes logic_function = 8;

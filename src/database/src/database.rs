@@ -1,1 +1,1 @@
-tonic::include_proto!("database");
+tonic::include_proto!("generated");

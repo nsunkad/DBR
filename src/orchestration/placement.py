@@ -1,21 +1,50 @@
 # Placement Service
 from application.utils.enums import Placement
+import sys
+import os
+import grpc
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'generated')))
+from generated import database_pb2, database_pb2_grpc
+
+DB_CHANNEL = grpc.insecure_channel('127.0.0.1:50051')
+DB_STUB = database_pb2_grpc.DatabaseStub(DB_CHANNEL)
+
 def placeDBR(dbr, place: Placement):
     if place == Placement.DEFAULT:
         # return client IP, predecessor location
         return dbr.predecessor_location 
-    else:
-        shard_locs = getQueryLocs()
-        if place == Placement.SMART:
+    shard_locs = QuerytoLocs(dbr.queries)
+    if place == Placement.SMART:
         # candidate locations approach
         # compares all access locs + client/prev dbr loc for best 
-            return 1
-        elif place == Placement.BRUTE:
+        return 1
+    if place == Placement.BRUTE:
         # compares each possible reigion latency to access locs
         # vectorization for speed up?
-            return 2
+        return shard_locs
 
-# TODO: Convert dbr.queries into database locations
-# extract keys, rpc db for Read/Write Regions 
-def getQueryLocs(): 
-    return None
+def QuerytoLocs(queries): 
+    locations = []
+    for query in queries:
+        query_type = query.WhichOneof('query_type')
+        if query_type == 'get_query':
+            key = query.get_query.key
+            regions = KeyToLoc(key, write=False)
+            locations.extend(regions)
+        elif query_type == 'set_query':
+            key = query.set_query.key
+            region = KeyToLoc(key, write=True)
+            # TEST: Do we need to narrow down to exact read region?
+            locations.append(region)
+        else:
+            print('Unknown query type')
+    return locations
+
+def KeyToLoc(key, write: bool):
+    request = database_pb2.RegionRequest(key=key)
+    if write:
+        response = DB_STUB.GetWriteRegion(request)
+        return response.region
+    response = DB_STUB.GetReadRegions(request)
+    return response.regions

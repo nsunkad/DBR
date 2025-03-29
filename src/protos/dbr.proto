@@ -31,12 +31,11 @@ message DBRReply {
     bool success = 1;
 }
 
-// QueryType should be obvious
-// if only key then GET
-// if key and value then SET
 message Query {
-   bytes key = 1; 
-   optional bytes value = 2;
+   oneof query_type {
+      GetRequest get_query = 1;
+      SetRequest set_query = 2;
+   }  
    QueryStatus status = 3;
 }
 

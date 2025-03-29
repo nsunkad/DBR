@@ -18,9 +18,14 @@ def run():
         dbr.name = "TestDBR"
         dbr.status = dbr_pb2.DBRStatus.DBR_CREATED
 
-        query = dbr.queries.add()
-        query.key = b"user:123"
-        query.status = dbr_pb2.QueryStatus.QUERY_CREATED
+        query1 = dbr.queries.add()
+        query1.get_query.key = b"key"
+        query1.status = dbr_pb2.QueryStatus.QUERY_CREATED
+
+        query2 = dbr.queries.add()
+        query2.set_query.key = b"key2"
+        query2.status = dbr_pb2.QueryStatus.QUERY_CREATED
+
 
         dbr.predecessor_location = "127.0.0.1"
         dbr.successor = "DBR-2345"

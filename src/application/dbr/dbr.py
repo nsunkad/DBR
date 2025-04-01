@@ -30,6 +30,7 @@ class DBR:
         self.status = DBRStatus.DBR_CREATED
         self.queries = {}
         self.predecessor_location = predecessor_location
+        self.next = None
         self.successor = successor
         self.environment = environment
         self.location = None

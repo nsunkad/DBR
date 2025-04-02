@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from generated import dbr_pb2, dbr_pb2_grpc 
 from application.utils.enums import Placement
 
-class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
+class ApplicationService(dbr_pb2_grpc.DBRMsgServicer):
     def ReceiveDBR(self, dbr):
         try:
             dbr.execute_queries()
@@ -30,7 +30,7 @@ def serve():
     # NOTE: Is 10 correct/ok to be hard coded?
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-    dbr_pb2_grpc.add_DBRMsgServicer_to_server(DBRServicer(), server)
+    dbr_pb2_grpc.add_DBRMsgServicer_to_server(ApplicationService(), server)
     port = 50053
     server.add_insecure_port(f'127.0.0.1:{port}')
     server.start()

@@ -10,9 +10,13 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 from generated import dbr_pb2, dbr_pb2_grpc
 
 def run():
-    # gRPC channel
-    with grpc.insecure_channel('localhost:50052') as channel:
-        stub = dbr_pb2_grpc.DBRMsgStub(channel)
+    # grpc channel
+    with grpc.insecure_channel('localhost:50052') as orchestration_channel:
+        
+        # create a stub for the channel
+        stub = dbr_pb2_grpc.DBRMsgStub(orchestration_channel)
+        
+        # create 
         dbr = dbr_pb2.DBR()
         dbr.id = "dbr-1234"
         dbr.name = "TestDBR"

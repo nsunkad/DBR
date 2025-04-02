@@ -18,9 +18,10 @@ from application.utils.enums import Placement
 
 class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
     
-    self.placement_setting = Placement.BRUTE
-    self.placement_host = "localhost"
-    self.placement_port = ":50053"
+    def __init__(self):
+        self.placement_setting = Placement.BRUTE
+        self.placement_host = "localhost"
+        self.placement_port = ":50053"
     
     def Send(self, request):
         print("Processing DBR")

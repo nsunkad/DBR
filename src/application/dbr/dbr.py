@@ -14,7 +14,7 @@ from application.utils.globals import (
 
 from generated import dbr_pb2
 from generated import dbr_pb2_grpc
-from dbclient.database_pb2_grpc import DatabaseStub
+from generated.database_pb2_grpc import DatabaseStub
 
 # sys.path.insert(
 #     0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../", "generated"))
@@ -90,10 +90,11 @@ class DBR:
     # TODO: perhaps rethink design
     def _marshal_dbr(self, dbr):
         dbreq = dbr_pb2.DBReq()
-        dbreq.id = dbr.id
+        dbreq.id = str(dbr.id)
         dbreq.name = dbr.name
-        dbreq.status = dbr.status
-        dbreq.queries = dbr.queries
+        dbreq.status = int(dbr.status)
+        breakpoint()
+        dbreq.queries = [query for query in dbr.queries.values()]
         dbreq.predecessor_location = dbr.predecessor_location
         if not self.successor:
             dbreq.successor = ""

@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
 
 class Placement(Enum):
@@ -12,7 +12,7 @@ class Placement(Enum):
     BRUTE = 3
 
 
-class DBRStatus(Enum):
+class DBRStatus(IntEnum):
     """
     Lifecycle status of DBR
     """

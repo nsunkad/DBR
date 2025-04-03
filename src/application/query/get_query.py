@@ -1,6 +1,6 @@
 from application.query.base_query import BaseQuery
 from application.utils.enums import QueryStatus, QueryType
-from dbclient import database_pb2
+from generated import database_pb2
 
 
 class GetQuery(BaseQuery):

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 class DBREnvironment:
     """
     Wrapper for a dictionary mapping between fetched keys and associated values
-    """
+"""
     def __init__(self, env):
         self.env = env
 

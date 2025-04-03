@@ -15,7 +15,7 @@ class BaseQuery(ABC):
 
     @abstractmethod
     def execute(self):
+        """Method to execute the query. Implemented in subclasses."""
         if not self.dbr:
             raise ValueError("Cannot execute a query not associated with a DBR")
         
-        """Method to execute the query. Implemented in subclasses."""

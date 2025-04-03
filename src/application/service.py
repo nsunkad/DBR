@@ -20,8 +20,6 @@ sys.path.insert(
 # Now import from generated
 from application.dbr.dbr import DBR
 from application.dbr.dbr_environment import DBREnvironment
-# from application.query.get_query import GetQuery
-# from application.query.set_query import SetQuery
 from generated import dbr_pb2, dbr_pb2_grpc
 
 
@@ -37,9 +35,7 @@ class ApplicationService(dbr_pb2_grpc.DBRMsgServicer):
             request.successor.execute()
         return dbr_pb2.DBRReply(success=True)
 
-    # TODO: perhaps rethink design
     def _unmarshal_dbreq(self, dbreq):
-        breakpoint()
         dbreq_queries = self._unmarshal_queries(dbreq.queries)
         updated_environment = DBREnvironment({pair.key: pair.value for pair in dbreq.environment})
         dbr = DBR(
@@ -60,6 +56,7 @@ class ApplicationService(dbr_pb2_grpc.DBRMsgServicer):
 
     def _unmarshal_queries(self, dbreq_queries):
         # TODO: Unimplemented
+        breakpoint()
         raise NotImplementedError
         
         

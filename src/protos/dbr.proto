@@ -32,13 +32,13 @@ message DBRReply {
     bool success = 1;
 }
 
-message GetQuery {
+message GetQueryMsg {
     string id = 1;
     QueryStatus status = 2;
     bytes key = 3;
 }
 
-message SetQuery {
+message SetQueryMsg {
     string id = 1;
     QueryStatus status = 2;
     bytes key = 3;
@@ -46,8 +46,8 @@ message SetQuery {
 }
 message Query {
    oneof query_type {
-      GetQuery get_query = 1;
-      SetQuery set_query = 2;
+      GetQueryMsg get_query = 1;
+      SetQueryMsg set_query = 2;
    }
 }
 

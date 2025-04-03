@@ -1,7 +1,7 @@
-from enum import Enum, IntEnum
+from enum import IntEnum
 
 
-class Placement(Enum):
+class Placement(IntEnum):
     """
     Default placement: next to client
     Smart placement: optimized
@@ -22,7 +22,7 @@ class DBRStatus(IntEnum):
     DBR_FAILED = 4
 
 
-class QueryType(Enum):
+class QueryType(IntEnum):
     
     """
     Type of query.
@@ -31,7 +31,7 @@ class QueryType(Enum):
     SET = 2
 
 
-class QueryStatus(Enum):
+class QueryStatus(IntEnum):
     """
     Lifecycle status of query
     """

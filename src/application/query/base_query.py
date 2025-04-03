@@ -18,4 +18,7 @@ class BaseQuery(ABC):
         """Method to execute the query. Implemented in subclasses."""
         if not self.dbr:
             raise ValueError("Cannot execute a query not associated with a DBR")
+    
+    def marshal(self):
+        raise NotImplementedError
         

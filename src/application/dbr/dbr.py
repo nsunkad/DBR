@@ -5,7 +5,7 @@ from uuid import uuid4
 from pprint import pformat
 from asyncio import TaskGroup
 from application.dbr.dbr_environment import DBREnvironment
-from application.utils.enums import DBRStatus
+from application.utils.enums import DBRStatus, QueryType
 from application.utils.globals import (
     LOGGER,
     DATABASE_ADDR,
@@ -87,21 +87,29 @@ class DBR:
             
             return response
 
-    # TODO: perhaps rethink design
     def _marshal_dbr(self, dbr):
         dbreq = dbr_pb2.DBReq()
         dbreq.id = str(dbr.id)
         dbreq.name = dbr.name
         dbreq.status = int(dbr.status)
-        breakpoint()
-        dbreq.queries = [query for query in dbr.queries.values()]
-        dbreq.predecessor_location = dbr.predecessor_location
+        for query in self._marshal_queries(dbr.queries):
+            query = dbreq.queries.add()
+        dbreq.predecessor_location = str(dbr.predecessor_location)
         if not self.successor:
-            dbreq.successor = ""
             return dbreq
         
         dbreq.successor = self._marshal_dbr(self.successor)
         return dbreq
+
+    def _marshal_queries(self, queries):
+        results = []
+        for query in queries.values():
+            if query.query_type == QueryType.SET:
+                results.append(query.marshal())
+            elif query.query_type == QueryType.GET:
+                results.append(query.marshal())
+        return results
+            
 
     async def execute_queries(self):
         async with TaskGroup() as tg:

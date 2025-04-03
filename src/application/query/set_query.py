@@ -12,7 +12,6 @@ class SetQuery(BaseQuery):
         self.value = value
         self.status = QueryStatus.QUERY_CREATED
         self.query_type = QueryType.SET
-        self.dbts = []
 
     def execute(self):
         """Executes a get query and returns the corresponding value"""

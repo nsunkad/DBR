@@ -50,7 +50,7 @@ class DBR:
         self.queries = queries
         self.predecessor_location = predecessor_location
         self.successor = successor
-        self.environment = environment
+        self.environment = DBREnvironment()
         self.location = None
 
         # Because we don't want the additional overhead of connecting to the
@@ -84,6 +84,8 @@ class DBR:
 
             if not response.success:
                 print("DBR orchestration failed")
+            
+            return response
 
     # TODO: perhaps rethink design
     def _marshal_dbr(self, dbr):

@@ -6,8 +6,10 @@ class DBREnvironment:
     """
     Wrapper for a dictionary mapping between fetched keys and associated values
 """
-    def __init__(self, env):
-        self.env = env
+
+    def __init__(self, env=None):
+        if env:
+            self.env = env
 
     def __getitem__(self, key):
         """Fetches value for associated key in environment

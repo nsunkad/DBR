@@ -3,11 +3,14 @@ from application.utils.enums import Placement
 import sys
 import os
 import grpc
+from application.utils.globals import (
+    DATABASE_ADDR
+)
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'generated')))
 from generated import database_pb2, database_pb2_grpc
 
-DB_CHANNEL = grpc.insecure_channel('127.0.0.1:50051')
+DB_CHANNEL = grpc.insecure_channel(DATABASE_ADDR)
 DB_STUB = database_pb2_grpc.DatabaseStub(DB_CHANNEL)
 
 def placeDBR(dbr, place: Placement):

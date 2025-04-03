@@ -19,7 +19,7 @@ def run():
         application_server = dbr_pb2_grpc.DBRMsgStub(application_channel)
         get = GetQ("key1")
         set = SetQ("key1", "value2")
-        queries = {get.id: get, set.id: set}
+        queries = {get.id: get, set.id: set} # TODO: Note this syntax doesn't work yet
         dbr = DBR(name="TestDBR", queries=queries, successor=None)
         response = dbr.execute()
         print(response)

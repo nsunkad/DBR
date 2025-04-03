@@ -6,8 +6,8 @@ def fetch_latencies():
     """
     Fetch region latencies
     """
-    root_dir = Path(__file__).resolve().parent.parent.parent
-    latencies_csv = root_dir / "scripts" / "latencies.csv"
+    root_dir = Path(__file__).resolve().parent.parent.parent.parent
+    latencies_csv = root_dir / "config" / "region_latencies.csv"
     latencies = {}
     
     with open(latencies_csv, encoding='utf-8', newline="") as csvfile:

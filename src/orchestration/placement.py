@@ -17,10 +17,10 @@ def placeDBR(dbr, place: Placement):
     shard_locs = QuerytoLocs(dbr.queries)
     if place == Placement.SMART:
         # candidate locations approach
-        # compares all access locs + client/prev dbr loc for best 
-        return 1
+        # TODO: compares all access locs + client/prev dbr loc for best 
+        return shard_locs[0]
     if place == Placement.BRUTE:
-        # compares each possible reigion latency to access locs
+        # TODO: compares each possible reigion latency to access locs
         # vectorization for speed up?
         
         # TODO: hardcoded to return first shard location, fix

@@ -23,5 +23,7 @@ class DBREnvironment:
     def __ior__(self, other):
         if isinstance(other, DBREnvironment):
             self.env |= other.env
+        elif isinstance(other, dict):
+            self.env |= other
         else:
             raise TypeError("Not a DBREnvironment")

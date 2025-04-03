@@ -15,7 +15,8 @@ enum DBRStatus {
 }
 
 service DBRMsg {
-    rpc Send (DBR) returns (DBRReply);
+    rpc Send (DBReq) returns (DBRReply);
+    rpc Schedule (DBReq) returns (DBRReply);
 }
 
 enum QueryStatus {
@@ -39,7 +40,7 @@ message Query {
    QueryStatus status = 3;
 }
 
-message DBR {
+message DBReq {
     string id = 1;
     string name = 2;
     DBRStatus status = 3;

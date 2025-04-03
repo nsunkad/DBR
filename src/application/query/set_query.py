@@ -15,4 +15,3 @@ class SetQuery(BaseQuery):
     def execute(self):
         """Executes a set query and returns the corresponding value"""
         
-        raise NotImplementedError("Not yet implemented")

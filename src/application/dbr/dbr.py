@@ -102,13 +102,7 @@ class DBR:
         return dbreq
 
     def _marshal_queries(self, queries):
-        results = []
-        for query in queries.values():
-            if query.query_type == QueryType.SET:
-                results.append(query.marshal())
-            elif query.query_type == QueryType.GET:
-                results.append(query.marshal())
-        return results
+        return [query.marshal() for query in queries.values()]
             
 
     async def execute_queries(self):

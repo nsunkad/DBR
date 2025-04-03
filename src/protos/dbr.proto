@@ -48,7 +48,7 @@ message DBReq {
     repeated Query queries = 4;    
 
     string predecessor_location = 5;
-    string successor = 6;
+    DBReq successor = 6;
 
     // KeyValue comes from "database.proto"
     repeated KeyValue environment = 7;

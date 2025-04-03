@@ -2,7 +2,6 @@ from uuid import uuid4
 from abc import ABC, abstractmethod
 
 from generated.dbr_pb2_grpc import DBRMsgStub
-from dbclient.database_pb2 import RegionRequest, GetRequest, SetRequest
 
 
 class BaseQuery(ABC):

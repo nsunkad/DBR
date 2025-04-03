@@ -22,7 +22,7 @@ class ApplicationService(dbr_pb2_grpc.DBRMsgServicer):
             
             updated_environment = {pair.key: pair.value for pair in request.environment}
             dbr = DBR(request.id, request.name, request.status, request.predecessor_location,request.successor)
-            dbr.environment = updated_environment
+            dbr.environment = DBREnvironment(updated_environment)
             asyncio.run(dbr.execute_queries())
         except Exception as e:
             LOGGER.exception(e)

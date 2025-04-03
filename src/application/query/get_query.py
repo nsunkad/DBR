@@ -1,5 +1,6 @@
 from application.query.base_query import BaseQuery
 from application.utils.enums import QueryStatus, QueryType
+from dbclient import database_pb2
 
 
 class GetQuery(BaseQuery):
@@ -13,6 +14,7 @@ class GetQuery(BaseQuery):
 
     def execute(self):
         """Executes a get query and returns the corresponding value"""
-
-        # Look up which read replica to read from
-        raise NotImplementedError("Not yet implemented")
+        request = database_pb2.GetRequest(bytes(self.key))
+        response = self.dbr.database_stub.Get(request)
+        print("GET response: ", "Key: ", self.key, "Response: ", response)
+        

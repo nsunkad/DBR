@@ -94,6 +94,7 @@ class DBR:
         results = {
             dbt.query.key: dbt.result() for dbt in dbtasks if dbt.result() is not None
         }
+        breakpoint()
         self.environment |= DBREnvironment(results)
 
         if self.successor:
@@ -105,4 +106,8 @@ class DBR:
         LOGGER.info("DBR: %s, %s", self.name, self.status)
 
     def __repr__(self):
-        return f"DBR(tasks={pformat(self.queries)})"
+        return f"DBR(queries={pformat(self.queries)})"
+
+    def __del__(self):
+        self.database_connection.close()
+        

@@ -1,9 +1,9 @@
 import sys
 import os
 import grpc
-from application.dbr.dbr import DBR
-from application.query.get_query import GetQuery as GetQ
-from application.query.set_query import SetQuery as SetQ
+from client.dbr.dbr import DBR
+from client.query.get_query import GetQuery as GetQ
+from client.query.set_query import SetQuery as SetQ
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'generated')))
 

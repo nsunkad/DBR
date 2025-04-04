@@ -4,9 +4,9 @@ import grpc
 from uuid import uuid4
 from pprint import pformat
 from asyncio import TaskGroup
-from application.dbr.dbr_environment import DBREnvironment
-from application.utils.enums import DBRStatus, QueryType
-from application.utils.globals import (
+from client.dbr.dbr_environment import DBREnvironment
+from client.utils.enums import DBRStatus, QueryType
+from client.utils.globals import (
     LOGGER,
     DATABASE_ADDR,
     ORCHESTRATION_ADDR,

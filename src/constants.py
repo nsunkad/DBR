@@ -3,7 +3,7 @@ import socket
 import sys
 
 from logger import Logger
-from utils import load_latencies
+from utils import load_latencies, load_hostname_regions
 
 ROOT_DIR = os.environ.get("ROOT_DIR", None)
 if ROOT_DIR is None:
@@ -12,17 +12,20 @@ if ROOT_DIR is None:
 
 LOGGER = Logger()
 REGION_LATENCIES = load_latencies(os.path.join(ROOT_DIR, "config/region_latencies.csv"))
+HOSTNAME_REGIONS = load_hostname_regions(os.path.join(ROOT_DIR, "config/hostname_regions.csv"))
 
 DATABASE_PORT = "50051"
 ORCHESTRATION_PORT = "50052"
 APPLICATION_PORT = "50053"
 
-DATABASE_URL = "localhost"
-ORCHESTRATION_URL = "localhost"
-APPLICATION_URL = "localhost"
+DATABASE_URL = "0.0.0.0"
+ORCHESTRATION_URL = "0.0.0.0"
+APPLICATION_URL = "0.0.0.0"
 
 DATABASE_ADDR = f"{DATABASE_URL}:{DATABASE_PORT}"
 ORCHESTRATION_ADDR = f"{ORCHESTRATION_URL}:{ORCHESTRATION_PORT}"
 APPLICATION_ADDR = f"{APPLICATION_URL}:{APPLICATION_PORT}"
 
 LOCAL_HOSTNAME = socket.getfqdn()
+if LOCAL_HOSTNAME not in [x[0] for x in HOSTNAME_REGIONS]:
+    LOCAL_HOSTNAME = "localhost"

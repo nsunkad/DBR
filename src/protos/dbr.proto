@@ -56,7 +56,7 @@ message DBReq {
     string name = 2;
     DBRStatus status = 3;
     repeated Query queries = 4;    
-    string predecessor_location = 5;
+    optional string predecessor_location = 5;
     DBReq successor = 6;
     DBREnvironment environment = 7;
     optional bytes logic_function = 8;

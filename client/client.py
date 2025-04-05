@@ -11,11 +11,11 @@ from constants import ORCHESTRATION_ADDR
 def run():
     server_url = ORCHESTRATION_ADDR
 
-    get_q = GetQ(b"key1")
+    get_q = GetQ(b"key3")
     # set_q = SetQ(b"key1", b"value2")
     # queries = {get_q.id: get_q, set_q.id: set_q}
     queries = {get_q.id: get_q}
-    dbr = DBR(name="TestDBR", queries=queries, successor=None)
+    dbr = DBR(name="TestDBR", queries=queries)
     response = dbr.execute(server_url)
     print(response)
 

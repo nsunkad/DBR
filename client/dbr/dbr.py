@@ -16,11 +16,9 @@ class DBR:
     """
     def __init__(
         self,
-        id=None,
         name=None,
         status=DBRStatus.DBR_CREATED,
         queries={},
-        predecessor_location=None,
         successor=None,
         environment=None,
     ):
@@ -33,7 +31,7 @@ class DBR:
         self.name = name
         self.status = status
         self.queries = queries
-        self.predecessor_location = predecessor_location
+        self.predecessor_location = None
         self.successor = successor
         self.environment = DBREnvironment()
         self.location = None
@@ -74,7 +72,9 @@ class DBR:
         
         for query in self.queries.values():
             dbreq.queries.append(query.marshal())
-        dbreq.predecessor_location = str(dbr.predecessor_location)
+        
+        if self.predecessor_location:
+            dbreq.predecessor_location = self.predecessor_location
 
         if self.successor:
             dbreq.successor = self._marshal_dbr(self.successor)

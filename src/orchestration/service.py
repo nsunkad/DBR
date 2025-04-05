@@ -19,7 +19,7 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
         self.placement_mode = placement_mode
         self.placement_host = placement_host
     
-    def Send(self, request, context):
+    def Schedule(self, request, context):
         print("Processing DBR")
         # how are we going to decide per DBR placement?
         example_setting = Placement.BRUTE

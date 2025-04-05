@@ -22,7 +22,6 @@ class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
         print("Processing DBR")
         # how are we going to decide per DBR placement?
         example_setting = Placement.BRUTE
-
         # TODO: eventually forwards DBR to this ip 
         print(placeDBR(request, example_setting))
         

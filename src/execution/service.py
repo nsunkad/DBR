@@ -12,20 +12,19 @@ from dbr_pb2 import DBReq, DBREnvironment, DBRReply
 from dbr_pb2_grpc import DBReqService
 import dbr_pb2_grpc
 
-class ApplicationService(DBReqService):
+class ExecutionService(DBReqService):
     queue = asyncio.Queue()
     executor = Executor(queue)
     asyncio.to_thread(executor.run())
     
-    def Schedule(self, request, context):
-        dbr = DBReq(request)
-        self.queue.put_nowait(dbr)
+    def Schedule(self, dbreq, context):
+        self.queue.put_nowait(dbreq)
         return DBRReply(success=True)
         
 def serve():
     application_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-    dbr_pb2_grpc.add_DBReqServiceServicer_to_server(ApplicationService(), application_server)
+    dbr_pb2_grpc.add_DBReqServiceServicer_to_server(ExecutionService(), application_server)
 
     application_server.add_insecure_port(APPLICATION_ADDR)
     application_server.start()

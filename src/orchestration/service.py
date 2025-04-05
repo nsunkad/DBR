@@ -1,49 +1,82 @@
-# Listen for DBRs
-# Once DBR recieved, smart placement [placement.py]
-import sys
-import os
+import asyncio
+import threading
 import grpc
-
 from concurrent import futures
-
-from constants import APPLICATION_PORT, ORCHESTRATION_PORT, ORCHESTRATION_ADDR, ROOT_DIR
+import random
+from constants import ORCHESTRATION_PORT, ORCHESTRATION_ADDR, REGION_HOSTNAME_MAPPINGS, ROOT_DIR
 from orchestration.placement import placeDBR
-
-# Now import from generated
 from generated import dbr_pb2, dbr_pb2_grpc 
 from enums import Placement
 
+
+def start_background_loop(loop):
+    """Run an asyncio event loop in a background thread."""
+    asyncio.set_event_loop(loop)
+    loop.run_forever()
+
 class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
-    
-    def __init__(self, placement_host="localhost", placement_mode=Placement.DEFAULT):
+
+    def __init__(self, placement_host="localhost", placement_mode=Placement.BRUTE):
         self.placement_mode = placement_mode
         self.placement_host = placement_host
+        self.placement_cache = {}
+
+        self.loop = asyncio.new_event_loop()
+        self.thread = threading.Thread(target=start_background_loop, args=(self.loop,), daemon=True)
+        self.thread.start()
+
+        asyncio.run_coroutine_threadsafe(self._start_worker(), self.loop)
+        # asyncio.create_task(self.queue_worker())
+
+    async def _start_worker(self):
+        self.queue = asyncio.Queue()
+        asyncio.create_task(self.queue_worker())
     
-    def Schedule(self, request, context):
+    def Schedule(self, dbreq, context):
+        # self.loop.call_soon_threadsafe(self.queue.put_nowait, dbreq)
+        # self.queue.put_nowait(dbreq)
+        self.loop.call_soon_threadsafe(self.queue.put_nowait, dbreq)
         print("Received DBR")
-        # how are we going to decide per DBR placement?
-        example_setting = Placement.BRUTE
-        # TODO: eventually forwards DBR to this ip 
-        print(placeDBR(request, example_setting))
-        
-        print("Returning a response!")
         return dbr_pb2.DBRReply(success=True)
 
-    def _forward_dbr_to_placement(self, dbr):
-        placement = self.placement_host + APPLICATION_PORT
-        print("Placement: ", placement)
+    async def queue_worker(self):
+        print("in queue")
+        while True:
+            print("in loop")
+            dbreq = await self.queue.get()
+            print("Popped DBR!", dbreq)
+            # await asyncio.create_task(self._handle_dbr(dbreq))
+            await asyncio.to_thread(self._handle_dbr, dbreq)
         
-        # Schedule DBR at the selected placement location
-        with grpc.insecure_channel(placement) as application_channel:
-            stub = dbr_pb2_grpc.DBRMsgStub(application_channel)
-            response = stub.Schedule(dbr) # Send DBR to placement server
-            if response.success:
-                print("Placed DBR at {placement} via the {self.placement_mode} placement mode")
+    def _handle_dbr(self, dbreq):
+        print("Handling DBR", dbreq)
+        locations = placeDBR(dbreq, self.placement_mode)
+        print(locations)
+        hostnames = []
+        for loc in locations:
+            hostnames.extend(REGION_HOSTNAME_MAPPINGS[loc])
+        selected_hostname = random.choice(hostnames)
+        print(hostnames, selected_hostname)
+
+        self._forward_dbr(dbreq, selected_hostname)
+
+    def _forward_dbr(self, dbr, hostname):
+        url = f"{hostname}:{ORCHESTRATION_PORT}"
+        print(url)
+        
+        if url not in self.placement_cache:
+            channel = grpc.insecure_channel(url)
+        else:
+            channel = self.placement_cache[url]
+        
+        stub = dbr_pb2_grpc.DBReqServiceStub(channel)
+        response = stub.Schedule(dbr) # Send DBR to placement server
+        if response.success:
+            print("Placed DBR at {placement} via the {self.placement_mode} placement mode")
 
 def serve():
     # NOTE: Is 10 correct/ok to be hard coded?
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
-
     dbr_pb2_grpc.add_DBReqServiceServicer_to_server(DBRServicer(), server)
     server.add_insecure_port(ORCHESTRATION_ADDR)
     server.start()

@@ -12,7 +12,7 @@ if ROOT_DIR is None:
 
 LOGGER = Logger()
 REGION_LATENCIES = load_latencies(os.path.join(ROOT_DIR, "config/region_latencies.csv"))
-HOSTNAME_REGIONS = load_hostname_regions(os.path.join(ROOT_DIR, "config/hostname_regions.csv"))
+HOSTNAME_REGION_MAPPINGS, REGION_HOSTNAME_MAPPINGS = load_hostname_regions(os.path.join(ROOT_DIR, "config/hostname_regions.csv"))
 
 DATABASE_PORT = "50051"
 ORCHESTRATION_PORT = "50052"
@@ -27,5 +27,5 @@ ORCHESTRATION_ADDR = f"{ORCHESTRATION_URL}:{ORCHESTRATION_PORT}"
 APPLICATION_ADDR = f"{APPLICATION_URL}:{APPLICATION_PORT}"
 
 LOCAL_HOSTNAME = socket.getfqdn()
-if LOCAL_HOSTNAME not in [x[0] for x in HOSTNAME_REGIONS]:
+if LOCAL_HOSTNAME not in HOSTNAME_REGION_MAPPINGS:
     LOCAL_HOSTNAME = "localhost"

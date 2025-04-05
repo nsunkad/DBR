@@ -32,14 +32,20 @@ def load_hostname_regions(hostname_region_csv):
     server2.example.com,us-west
     server3.example.com,eu
     """
-    hostname_regions = []
+    hostname_regions_mappings = {}
+    region_hostname_mappings = {}
     with open(hostname_region_csv, newline="") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             hostname = row["hostname"].strip()
             region = row["region"].strip()
-            hostname_regions.append((hostname, region))
-    return hostname_regions
+
+            hostname_regions_mappings[hostname] = region
+            if region not in region_hostname_mappings:
+                region_hostname_mappings[region] = []
+            region_hostname_mappings[region].append(hostname)
+
+    return hostname_regions_mappings, region_hostname_mappings
 
 
 def import_protobuf():

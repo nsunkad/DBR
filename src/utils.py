@@ -1,4 +1,5 @@
 import csv 
+
 def load_latencies(latencies_csv):
     """
     Load the latencies CSV file.

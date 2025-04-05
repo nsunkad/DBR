@@ -1,7 +1,7 @@
 import sys
 import grpc
 import asyncio
-from application.executor import Executor
+from execution.executor import Executor
 from constants import (
     APPLICATION_PORT,
     APPLICATION_ADDR,

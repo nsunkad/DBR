@@ -44,7 +44,6 @@ class Executor:
         results = {self.get_query_key(query): result for query, result in zip(dbr.queries, query_results)}
         print("Results: ", results)
         # TODO: Send results back to client/next layer
-        return results
 
     def get_query_key(self, query):
         query_type = query.WhichOneof('query_type')

@@ -5,7 +5,7 @@ import sys
 from grpc_tools import protoc
 
 TARGETS = ["database.proto", "dbr.proto"]
-OUT_DIRS = ["src/generated", "client/generated"]
+OUT_DIRS = ["src/generated"]
 
 def gen_protos(root_dir):
     proto_include = os.path.abspath(os.path.join(root_dir, "src", "protos"))

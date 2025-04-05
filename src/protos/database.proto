@@ -18,34 +18,23 @@ message HelloReply {
   string message = 1;
 }
 
-// ----- Get Request/Reply -----
-//
-// Get a value from the database by providing a key.
 message GetRequest {
   bytes key = 1;
 }
 
-// Returned value, as raw bytes
 message GetReply {
   bytes value = 1; 
 }
 
-// ----- Set Request/Reply -----
-//
-// Set a value in the database for a given key.
 message SetRequest {
   bytes key = 1;   // key must be 8 bytes
   bytes value = 2; // value to be stored
 }
 
-// indicates if the set operation was successful
 message SetReply {
   bool success = 1;
 }
 
-// ----- Region Request/Replies -----
-//
-// Get regions for read/write operations.
 message RegionRequest {
   bytes key = 1;
 }
@@ -59,9 +48,6 @@ message WriteRegionReply {
 }
 
 
-// ----- Key-Value Pair -----
-//
-// A simple message to hold a key-value pair.
 message KeyValue {
   bytes key = 1;   // key must be 8 bytes
   bytes value = 2; // corresponding value

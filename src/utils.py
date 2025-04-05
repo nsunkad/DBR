@@ -40,3 +40,33 @@ def load_hostname_regions(hostname_region_csv):
             region = row["region"].strip()
             hostname_regions.append((hostname, region))
     return hostname_regions
+
+
+def import_protobuf():
+    import sys
+    import importlib.util
+    from constants import ROOT_DIR
+
+    def import_module(module_name, module_path, alias=""):
+        spec = importlib.util.spec_from_file_location(module_name, module_path)
+        if spec is None:
+            print(f"Error: Could not create module specification for {module_path}")
+            return None
+
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+
+        try:
+            spec.loader.exec_module(module)
+            if alias:
+                sys.modules[alias] = module
+            print(f"Module {module_name} imported successfully.")
+        except Exception as e:
+            print(f"Error: Failed to execute module {module_path}: {e}")
+            del sys.modules[module_name]
+            return None
+
+    import_module("generated.database_pb2", f"{ROOT_DIR}/src/generated/database_pb2.py", alias="database_pb2")
+    import_module("generated.database_pb2_grpc", f"{ROOT_DIR}/src/generated/database_pb2_grpc.py", alias="database_pb2_grpc")
+    import_module("generated.dbr_pb2", f"{ROOT_DIR}/src/generated/dbr_pb2.py", alias="dbr_pb2")
+    import_module("generated.dbr_pb2_grpc", f"{ROOT_DIR}/src/generated/dbr_pb2_grpc.py", alias="dbr_pb2_grpc")

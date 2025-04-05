@@ -3,21 +3,22 @@
 import sys
 import os
 import grpc
-import signal
+
 from concurrent import futures
 
+from constants import APPLICATION_PORT, ORCHESTRATION_PORT, ORCHESTRATION_ADDR, ROOT_DIR
 from orchestration.placement import placeDBR
 
-# Add the src directory to the Python path
-# import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'generated')))
-
 # Now import from generated
-from generated import dbr_pb2 
-from generated import dbr_pb2_grpc 
-from application.utils.enums import Placement
+from generated import dbr_pb2, dbr_pb2_grpc 
+from enums import Placement
 
-class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
+class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
+    
+    def __init__(self, placement_host="localhost", placement_mode=Placement.DEFAULT):
+        self.placement_mode = placement_mode
+        self.placement_host = placement_host
+    
     def Send(self, request, context):
         print("Processing DBR")
         # how are we going to decide per DBR placement?
@@ -27,15 +28,25 @@ class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
         
         return dbr_pb2.DBRReply(success=True)
 
+    def _forward_dbr_to_placement(self, dbr):
+        placement = self.placement_host + APPLICATION_PORT
+        print("Placement: ", placement)
+        
+        # Schedule DBR at the selected placement location
+        with grpc.insecure_channel(placement) as application_channel:
+            stub = dbr_pb2_grpc.DBRMsgStub(application_channel)
+            response = stub.Schedule(dbr) # Send DBR to placement server
+            if response.success:
+                print("Placed DBR at {placement} via the {self.placement_mode} placement mode")
+
 def serve():
     # NOTE: Is 10 correct/ok to be hard coded?
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-    dbr_pb2_grpc.add_DBRMsgServicer_to_server(DBRServicer(), server)
-    port = 50052 
-    server.add_insecure_port(f'127.0.0.1:{port}')
+    dbr_pb2_grpc.add_DBReqServiceServicer_to_server(DBRServicer(), server)
+    server.add_insecure_port(ORCHESTRATION_ADDR)
     server.start()
-    print(f"Server started, listening on port {port}")
+    print(f"Orchestration server started, listening on port {ORCHESTRATION_PORT}")
 
     # Block until server is terminated, graceful shutdown
     server.wait_for_termination()

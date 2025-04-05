@@ -2,11 +2,9 @@ syntax = "proto3";
 
 package generated;
 
-// used for KeyValue 
 import "database.proto";
 
 enum DBRStatus {
-    // necessary in proto3
     DBR_UNKNOWN = 0;
     DBR_CREATED = 1;
     DBR_RUNNING = 2;
@@ -14,12 +12,11 @@ enum DBRStatus {
     DBR_FAILED = 4; 
 }
 
-service DBRMsg {
-    rpc Send (DBR) returns (DBRReply);
+service DBReqService {
+    rpc Schedule (DBReq) returns (DBRReply);
 }
 
 enum QueryStatus {
-   // necessary in proto3
    QUERY_UNKNOWN = 0;
    QUERY_CREATED = 1;
    QUERY_RUNNING = 2;
@@ -27,36 +24,41 @@ enum QueryStatus {
    QUERY_FAILED = 4;
 }
 
+message DBREnvironment {
+    repeated KeyValue environment = 1;
+}
+
 message DBRReply {
     bool success = 1;
 }
 
-message Query {
-   oneof query_type {
-      GetRequest get_query = 1;
-      SetRequest set_query = 2;
-   }  
-   QueryStatus status = 3;
+message GetQuery {
+    string id = 1;
+    QueryStatus status = 2;
+    bytes key = 3;
 }
 
-message DBR {
+message SetQuery {
+    string id = 1;
+    QueryStatus status = 2;
+    bytes key = 3;
+    bytes value = 4;
+}
+message Query {
+   oneof query_type {
+      GetQuery get_query = 1;
+      SetQuery set_query = 2;
+   }
+}
+
+message DBReq {
     string id = 1;
     string name = 2;
     DBRStatus status = 3;
-
     repeated Query queries = 4;    
-
     string predecessor_location = 5;
-    string successor = 6;
-
-    // KeyValue comes from "database.proto"
-    repeated KeyValue environment = 7;
-
-    // serialized business logic in between DBRs
+    DBReq successor = 6;
+    DBREnvironment environment = 7;
     optional bytes logic_function = 8;
-
-    // when sending DBR to orchestration 
-    // app layer doesn't know location
     optional string location = 9;
-
 }

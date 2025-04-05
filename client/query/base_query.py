@@ -1,7 +1,6 @@
 from uuid import uuid4
 from abc import ABC, abstractmethod
 
-
 class BaseQuery(ABC):
     """
     Abstract query class
@@ -9,7 +8,10 @@ class BaseQuery(ABC):
 
     def __init__(self):
         self.id = uuid4()
+        self.dbr = None
 
+    """Method to marshal the query. Implemented in subclasses."""
     @abstractmethod
-    def execute(self):
-        """Method to execute the query. Implemented in subclasses."""
+    def marshal(self):
+        raise NotImplementedError
+        

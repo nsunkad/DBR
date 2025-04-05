@@ -1,16 +1,19 @@
 # Placement Service
-from application.utils.enums import Placement
 import sys
 import os
+from enums import Placement
 import grpc
+from constants import (
+    DATABASE_ADDR,
+)
+
 import copy
 import socket
 
 from utils import load_latencies, load_hostname_regions
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'generated')))
 from generated import database_pb2, database_pb2_grpc
 
-DB_CHANNEL = grpc.insecure_channel('127.0.0.1:50051')
+DB_CHANNEL = grpc.insecure_channel(DATABASE_ADDR)
 DB_STUB = database_pb2_grpc.DatabaseStub(DB_CHANNEL)
 
 # TEST: with read replicas after csv filled in
@@ -41,7 +44,7 @@ def placeDBR(dbr, place: Placement):
         test_locs.update(shard_locs)
 
     if place == Placement.BRUTE:
-        # compares each possible reigion latency to access locs
+        # TODO: compares each possible reigion latency to access locs
         # vectorization for speed up?
         test_locs = set(host_to_region.keys())
     best_host = None

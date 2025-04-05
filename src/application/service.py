@@ -8,11 +8,11 @@ from constants import (
 )
 from concurrent import futures
 
+from dbr_pb2 import DBReq, DBREnvironment, DBRReply
+from dbr_pb2_grpc import DBReqService
 import dbr_pb2_grpc
 
-# from generated.dbr_pb2 import DBReq, DBREnvironment, DBRReply, DBReqService
-
-class ApplicationService(dbr_pb2_grpc.DBReqService):
+class ApplicationService(DBReqService):
     queue = asyncio.Queue()
     executor = Executor(queue)
     asyncio.to_thread(executor.run())
@@ -25,7 +25,7 @@ class ApplicationService(dbr_pb2_grpc.DBReqService):
 def serve():
     application_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-    dbr_pb2_grpc.add_DBRMsgServicer_to_server(ApplicationService(), application_server)
+    dbr_pb2_grpc.add_DBReqServiceServicer_to_server(ApplicationService(), application_server)
 
     application_server.add_insecure_port(APPLICATION_ADDR)
     application_server.start()

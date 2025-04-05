@@ -66,7 +66,7 @@ def import_protobuf():
             del sys.modules[module_name]
             return None
 
-    import_module("generated.database_pb2_grpc", f"{ROOT_DIR}/src/generated/database_pb2_grpc.py")
     import_module("generated.database_pb2", f"{ROOT_DIR}/src/generated/database_pb2.py", alias="database_pb2")
+    import_module("generated.database_pb2_grpc", f"{ROOT_DIR}/src/generated/database_pb2_grpc.py", alias="database_pb2_grpc")
     import_module("generated.dbr_pb2", f"{ROOT_DIR}/src/generated/dbr_pb2.py", alias="dbr_pb2")
     import_module("generated.dbr_pb2_grpc", f"{ROOT_DIR}/src/generated/dbr_pb2_grpc.py", alias="dbr_pb2_grpc")

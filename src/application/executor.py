@@ -3,9 +3,9 @@ import asyncio
 import grpc
 from constants import DATABASE_ADDR
 
-from generated.database_pb2 import GetRequest, SetRequest
+from database_pb2 import GetRequest, SetRequest
 from dbr_pb2 import GetQuery, SetQuery
-from generated.database_pb2_grpc import DatabaseStub
+from database_pb2_grpc import DatabaseStub
 
 
 class Executor:

@@ -1,17 +1,16 @@
 from enums import Placement
 import grpc
 from constants import (
-    DATABASE_ADDR,
+    DATABASE_PORT,
     LOCAL_HOSTNAME,
     REGION_LATENCIES,
     HOSTNAME_REGION_MAPPINGS
 )
 
-import socket
-from utils import load_latencies, load_hostname_regions
 from generated import database_pb2, database_pb2_grpc
 
-DB_CHANNEL = grpc.insecure_channel(DATABASE_ADDR)
+db_url = f"{LOCAL_HOSTNAME}:{DATABASE_PORT}"
+DB_CHANNEL = grpc.insecure_channel(db_url)
 DB_STUB = database_pb2_grpc.DatabaseStub(DB_CHANNEL)
 
 def get_candidate_locations(placement_mode: Placement, dbr, shard_locations):

@@ -1,7 +1,7 @@
 import asyncio
 
 import grpc
-from constants import DATABASE_ADDR
+from constants import DATABASE_PORT, LOCAL_HOSTNAME
 
 from database_pb2 import GetRequest, SetRequest
 from dbr_pb2 import GetQuery, SetQuery
@@ -10,7 +10,8 @@ from database_pb2_grpc import DatabaseStub
 
 class Executor:
     def __init__(self, queue):
-        DB_CHANNEL = grpc.insecure_channel(DATABASE_ADDR)
+        local_database = f"{LOCAL_HOSTNAME}:{DATABASE_PORT}"
+        DB_CHANNEL = grpc.insecure_channel(local_database)
         self.database = DatabaseStub(DB_CHANNEL)
         self.queue = queue
 

@@ -3,7 +3,7 @@ import threading
 import grpc
 from concurrent import futures
 import random
-from constants import ORCHESTRATION_PORT, ORCHESTRATION_ADDR, REGION_HOSTNAME_MAPPINGS, ROOT_DIR
+from constants import EXECUTION_PORT, LOCAL_HOSTNAME, ORCHESTRATION_PORT, REGION_HOSTNAME_MAPPINGS, ROOT_DIR
 from orchestration.placement import placeDBR
 from generated import dbr_pb2, dbr_pb2_grpc 
 from enums import Placement
@@ -19,7 +19,7 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
     def __init__(self, placement_host="localhost", placement_mode=Placement.BRUTE):
         self.placement_mode = placement_mode
         self.placement_host = placement_host
-        self.placement_cache = {}
+        self.connection_cache = {}
 
         self.loop = asyncio.new_event_loop()
         self.thread = threading.Thread(target=start_background_loop, args=(self.loop,), daemon=True)
@@ -55,30 +55,37 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
         hostnames = []
         for loc in locations:
             hostnames.extend(REGION_HOSTNAME_MAPPINGS[loc])
+
+        if LOCAL_HOSTNAME in hostnames:
+            url = f"{LOCAL_HOSTNAME}:{EXECUTION_PORT}"
+            return self._forward_dbr(dbreq, url)
+
         selected_hostname = random.choice(hostnames)
-        print(hostnames, selected_hostname)
-
-        self._forward_dbr(dbreq, selected_hostname)
-
-    def _forward_dbr(self, dbr, hostname):
-        url = f"{hostname}:{ORCHESTRATION_PORT}"
-        print(url)
         
-        if url not in self.placement_cache:
+        # TODO: REMOVE
+        selected_hostname = "localhost"
+
+        url = f"{selected_hostname}:{EXECUTION_PORT}"
+        self._forward_dbr(dbreq, url)
+
+    def _forward_dbr(self, dbr, url):
+        if url not in self.connection_cache:
             channel = grpc.insecure_channel(url)
+            self.connection_cache[url] = channel
         else:
-            channel = self.placement_cache[url]
+            channel = self.connection_cache[url]
         
         stub = dbr_pb2_grpc.DBReqServiceStub(channel)
         response = stub.Schedule(dbr) # Send DBR to placement server
         if response.success:
-            print("Placed DBR at {placement} via the {self.placement_mode} placement mode")
+            print(f"Placed DBR at {url} via {self.placement_mode} placement mode")
 
 def serve():
     # NOTE: Is 10 correct/ok to be hard coded?
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     dbr_pb2_grpc.add_DBReqServiceServicer_to_server(DBRServicer(), server)
-    server.add_insecure_port(ORCHESTRATION_ADDR)
+    orchestration_address = f"0.0.0.0:{ORCHESTRATION_PORT}"
+    server.add_insecure_port(orchestration_address)
     server.start()
     print(f"Orchestration server started, listening on port {ORCHESTRATION_PORT}")
 

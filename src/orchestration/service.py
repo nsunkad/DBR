@@ -7,12 +7,9 @@ from constants import EXECUTION_PORT, LOCAL_HOSTNAME, ORCHESTRATION_PORT, REGION
 from orchestration.placement import placeDBR
 from generated import dbr_pb2, dbr_pb2_grpc 
 from enums import Placement
+from utils import start_background_loop
 
 
-def start_background_loop(loop):
-    """Run an asyncio event loop in a background thread."""
-    asyncio.set_event_loop(loop)
-    loop.run_forever()
 
 class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
 

@@ -1,4 +1,4 @@
-import csv 
+import csv
 
 def load_latencies(latencies_csv):
     """

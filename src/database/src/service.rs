@@ -63,6 +63,7 @@ impl Database for DB {
         
         // Get the three regions for the key
         let regions = vec![
+            self.vms[((hash_value + 0*OFFSET) % NUM_INSTANCES) as usize].clone(),
             self.vms[((hash_value + 1*OFFSET) % NUM_INSTANCES) as usize].clone(),
             self.vms[((hash_value + 2*OFFSET) % NUM_INSTANCES) as usize].clone(),
             self.vms[((hash_value + 3*OFFSET) % NUM_INSTANCES) as usize].clone(),

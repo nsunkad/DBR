@@ -9,14 +9,11 @@ from concurrent import futures
 from constants import APPLICATION_PORT, ORCHESTRATION_PORT, ORCHESTRATION_ADDR, ROOT_DIR
 from orchestration.placement import placeDBR
 
-# Add the src directory to the Python path
-sys.path.insert(0, (os.path.join(ROOT_DIR, "src", "generated")))
-
 # Now import from generated
 from generated import dbr_pb2, dbr_pb2_grpc 
 from enums import Placement
 
-class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
+class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
     
     def __init__(self, placement_host="localhost", placement_mode=Placement.DEFAULT):
         self.placement_mode = placement_mode
@@ -24,9 +21,11 @@ class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
     
     def Send(self, request, context):
         print("Processing DBR")
-        # returns a success message to requsting app server
-        # self.placement_host = placeDBR(request, example_setting) # TODO, uncomment this back in
-        self._forward_dbr_to_placement(request)
+        # how are we going to decide per DBR placement?
+        example_setting = Placement.BRUTE
+        # TODO: eventually forwards DBR to this ip 
+        print(placeDBR(request, example_setting))
+        
         return dbr_pb2.DBRReply(success=True)
 
     def _forward_dbr_to_placement(self, dbr):
@@ -44,7 +43,7 @@ def serve():
     # NOTE: Is 10 correct/ok to be hard coded?
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-    dbr_pb2_grpc.add_DBRMsgServicer_to_server(DBRServicer(), server)
+    dbr_pb2_grpc.add_DBReqServiceServicer_to_server(DBRServicer(), server)
     server.add_insecure_port(ORCHESTRATION_ADDR)
     server.start()
     print(f"Orchestration server started, listening on port {ORCHESTRATION_PORT}")

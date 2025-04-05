@@ -1,5 +1,5 @@
 from query.base_query import BaseQuery
-from utils.enums import QueryStatus, QueryType
+from enums import QueryStatus, QueryType
 from generated import dbr_pb2
 
 class SetQuery(BaseQuery):
@@ -13,7 +13,7 @@ class SetQuery(BaseQuery):
         self.query_type = QueryType.SET
 
     def marshal(self):
-        msg = dbr_pb2.SetQueryMsg()
+        msg = dbr_pb2.SetQuery()
         msg.id = str(self.id)
         msg.status = int(self.status)
         msg.key = bytes(self.key, encoding='utf-8')

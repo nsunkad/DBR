@@ -6,7 +6,7 @@ sys.path.insert( 0, os.path.abspath(os.path.join(os.path.dirname(__file__), "gen
 from dbr.dbr import DBR
 from query.get_query import GetQuery as GetQ
 from query.set_query import SetQuery as SetQ
-from utils.globals import ORCHESTRATION_ADDR
+from constants import ORCHESTRATION_ADDR
 
 def run():
     server_url = ORCHESTRATION_ADDR

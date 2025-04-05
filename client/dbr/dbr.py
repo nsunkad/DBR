@@ -56,10 +56,10 @@ class DBR:
         self.status = DBRStatus.DBR_RUNNING
         # Send DBR over orchestration channel for placement
         with grpc.insecure_channel(server_url) as orchestration_channel:
-            orchestration_stub = dbr_pb2_grpc.DBRMsgStub(orchestration_channel)
+            orchestration_stub = dbr_pb2_grpc.DBReqServiceStub(orchestration_channel)
 
             request = self._marshal_dbr(self)
-            response = orchestration_stub.Send(request)
+            response = orchestration_stub.Schedule(request)
 
             if not response.success:
                 print("DBR orchestration failed")

@@ -23,7 +23,7 @@ class ApplicationService(dbr_pb2_grpc.DBRMsgServicer):
     executor = Executor(queue)
     asyncio.create_task(executor.run())
     
-    def Schedule(self, request):
+    def Schedule(self, request, context):
         dbr = DBReq(request)
         self.queue.put_nowait(dbr)
         return dbr_pb2.DBRReply(success=True)

@@ -1,4 +1,5 @@
 import os
+import socket
 import sys
 
 from logger import Logger
@@ -24,3 +25,4 @@ DATABASE_ADDR = f"{DATABASE_URL}:{DATABASE_PORT}"
 ORCHESTRATION_ADDR = f"{ORCHESTRATION_URL}:{ORCHESTRATION_PORT}"
 APPLICATION_ADDR = f"{APPLICATION_URL}:{APPLICATION_PORT}"
 
+LOCAL_HOSTNAME = socket.getfqdn()

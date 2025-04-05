@@ -16,8 +16,8 @@ class SetQuery(BaseQuery):
         msg = dbr_pb2.SetQuery()
         msg.id = str(self.id)
         msg.status = int(self.status)
-        msg.key = bytes(self.key, encoding='utf-8')
-        msg.value = bytes(self.value, encoding='utf-8')
+        msg.key = self.key
+        msg.value = self.value
         query = dbr_pb2.Query(set_query=msg)
         return query
         

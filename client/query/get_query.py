@@ -15,6 +15,6 @@ class GetQuery(BaseQuery):
         msg = dbr_pb2.GetQuery()
         msg.id = str(self.id)
         msg.status = int(self.status)
-        msg.key = bytes(self.key, encoding='utf-8')
+        msg.key = self.key
         query = dbr_pb2.Query(get_query=msg)
         return query

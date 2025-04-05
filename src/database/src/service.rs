@@ -53,6 +53,7 @@ impl Database for DB {
         Ok(Response::new(SetReply { success: true }))
     }
     async fn get_read_regions(&self, request: Request<RegionRequest>) -> Result<Response<ReadRegionReply>, Status> {
+        println!("Received get_read_regions request");
         let key: Bytes = request.into_inner().key.into();
         
         let mut hasher = DefaultHasher::new();
@@ -73,6 +74,7 @@ impl Database for DB {
     }
 
     async fn get_write_region(&self, request: Request<RegionRequest>) -> Result<Response<WriteRegionReply>, Status> {
+        println!("Received get_write_region request");
         let key: Bytes = request.into_inner().key.into();
         
         let mut hasher = DefaultHasher::new();

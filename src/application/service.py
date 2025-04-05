@@ -4,7 +4,7 @@ import sys
 import os
 import grpc
 import asyncio
-from application.utils.globals import (
+from globals import (
     LOGGER,
     APPLICATION_PORT,
     APPLICATION_ADDR

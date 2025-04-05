@@ -6,7 +6,7 @@ import grpc
 
 from concurrent import futures
 
-from application.utils.globals import APPLICATION_PORT, ORCHESTRATION_PORT, ORCHESTRATION_ADDR
+from globals import APPLICATION_PORT, ORCHESTRATION_PORT, ORCHESTRATION_ADDR
 from orchestration.placement import placeDBR
 
 # Add the src directory to the Python path
@@ -15,7 +15,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..',
 
 # Now import from generated
 from generated import dbr_pb2, dbr_pb2_grpc 
-from application.utils.enums import Placement
+from enums import Placement
 
 class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
     

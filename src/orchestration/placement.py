@@ -1,9 +1,9 @@
 # Placement Service
-from application.utils.enums import Placement
+from enums import Placement
 import sys
 import os
 import grpc
-from application.utils.globals import (
+from globals import (
     DATABASE_ADDR
 )
 

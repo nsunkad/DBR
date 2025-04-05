@@ -1,4 +1,5 @@
 hostname,region
+localhost, us-east
 sp25-cs525-0301.cs.illinois.edu,us-east
 sp25-cs525-0302.cs.illinois.edu,us-west
 sp25-cs525-0303.cs.illinois.edu,eu

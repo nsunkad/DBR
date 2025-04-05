@@ -12,9 +12,9 @@ class GetQuery(BaseQuery):
         self.query_type = QueryType.GET
 
     def marshal(self):
-        msg = dbr_pb2.GetQueryMsg()
+        msg = dbr_pb2.GetQuery()
         msg.id = str(self.id)
         msg.status = int(self.status)
-        msg.key = bytes(self.key, encoding='utf-8')
+        msg.key = self.key
         query = dbr_pb2.Query(get_query=msg)
         return query

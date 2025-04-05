@@ -19,13 +19,14 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
         self.placement_mode = placement_mode
         self.placement_host = placement_host
     
-    def Send(self, request, context):
-        print("Processing DBR")
+    def Schedule(self, request, context):
+        print("Received DBR")
         # how are we going to decide per DBR placement?
         example_setting = Placement.BRUTE
         # TODO: eventually forwards DBR to this ip 
         print(placeDBR(request, example_setting))
         
+        print("Returning a response!")
         return dbr_pb2.DBRReply(success=True)
 
     def _forward_dbr_to_placement(self, dbr):

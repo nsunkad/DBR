@@ -19,7 +19,7 @@ def load_latencies(latencies_csv):
             region = row[region_key].strip()
             latencies[region] = {}
             for col in reader.fieldnames[1:]:
-                latencies[region][col.strip()] = row[col].strip()
+                latencies[region][col.strip()] = float(row[col].strip())
     return latencies
 
 def load_hostname_regions(hostname_region_csv):

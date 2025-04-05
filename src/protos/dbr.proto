@@ -12,8 +12,7 @@ enum DBRStatus {
     DBR_FAILED = 4; 
 }
 
-service DBRMsg {
-    rpc Send (DBReq) returns (DBRReply);
+service DBReqService {
     rpc Schedule (DBReq) returns (DBRReply);
 }
 
@@ -33,13 +32,13 @@ message DBRReply {
     bool success = 1;
 }
 
-message GetQueryMsg {
+message GetQuery {
     string id = 1;
     QueryStatus status = 2;
     bytes key = 3;
 }
 
-message SetQueryMsg {
+message SetQuery {
     string id = 1;
     QueryStatus status = 2;
     bytes key = 3;
@@ -47,8 +46,8 @@ message SetQueryMsg {
 }
 message Query {
    oneof query_type {
-      GetQueryMsg get_query = 1;
-      SetQueryMsg set_query = 2;
+      GetQuery get_query = 1;
+      SetQuery set_query = 2;
    }
 }
 

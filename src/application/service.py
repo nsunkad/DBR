@@ -1,32 +1,26 @@
-# Listen for DBRs
-# Once DBR recieved, smart placement [placement.py]
 import sys
-import os
 import grpc
 import asyncio
 from application.executor import Executor
 from constants import (
-    LOGGER,
     APPLICATION_PORT,
     APPLICATION_ADDR,
-    ROOT_DIR
 )
 from concurrent import futures
 
-sys.path.insert(0, (os.path.join(ROOT_DIR, "src", "generated")))
+import dbr_pb2_grpc
 
-from generated import dbr_pb2, dbr_pb2_grpc
-from generated.dbr_pb2 import DBReq, DBREnvironment, DBReply
+# from generated.dbr_pb2 import DBReq, DBREnvironment, DBRReply, DBReqService
 
-class ApplicationService(dbr_pb2_grpc.DBRMsgServicer):
+class ApplicationService(dbr_pb2_grpc.DBReqService):
     queue = asyncio.Queue()
     executor = Executor(queue)
-    asyncio.create_task(executor.run())
+    asyncio.to_thread(executor.run())
     
     def Schedule(self, request, context):
         dbr = DBReq(request)
         self.queue.put_nowait(dbr)
-        return dbr_pb2.DBRReply(success=True)
+        return DBRReply(success=True)
         
 def serve():
     application_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

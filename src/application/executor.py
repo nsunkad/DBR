@@ -1,13 +1,19 @@
 import asyncio
-from generated import database_pb2
+
+import grpc
+from constants import DATABASE_ADDR
+
 from generated.database_pb2 import GetRequest, SetRequest
-from generated.dbr_pb2 import GetQuery, SetQuery
+from dbr_pb2 import GetQuery, SetQuery
+from generated.database_pb2_grpc import DatabaseStub
+
 
 class Executor:
     def __init__(self, queue):
-        self.database = database_pb2.DatabaseStub()
+        DB_CHANNEL = grpc.insecure_channel(DATABASE_ADDR)
+        self.database = DatabaseStub(DB_CHANNEL)
         self.queue = queue
-    
+
     async def run(self):
         while True:
             dbr = await self.queue.get()

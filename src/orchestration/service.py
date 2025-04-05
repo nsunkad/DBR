@@ -2,56 +2,41 @@
 # Once DBR recieved, smart placement [placement.py]
 import sys
 import os
-import grpc
 
-from concurrent import futures
-
-from globals import APPLICATION_PORT, ORCHESTRATION_PORT, ORCHESTRATION_ADDR
 from orchestration.placement import placeDBR
+from constants import ROOT_DIR
 
 # Add the src directory to the Python path
 # import sys, os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'generated')))
-
+sys.path.insert(0, (os.path.join(ROOT_DIR, "src", "generated")))
+ 
 # Now import from generated
-from generated import dbr_pb2, dbr_pb2_grpc 
+from generated import dbr_pb2 
 from enums import Placement
 
-class DBRServicer(dbr_pb2_grpc.DBRMsgServicer):
-    
-    def __init__(self, placement_host="localhost", placement_mode=Placement.DEFAULT):
-        self.placement_mode = placement_mode
-        self.placement_host = placement_host
-    
-    def Send(self, request, context):
-        print("Processing DBR")
-        # returns a success message to requsting app server
-        # self.placement_host = placeDBR(request, example_setting) # TODO, uncomment this back in
-        self._forward_dbr_to_placement(request)
-        return dbr_pb2.DBRReply(success=True)
+# -------------------------------------------------------
+# this is what application layer would be doing
+# and then sending the .serialized over RPC
+dbr = dbr_pb2.DBR()
+dbr.id = "dbr-1234"
+dbr.name = "TestDBR"
+dbr.status = dbr_pb2.DBRStatus.DBR_CREATED
 
-    def _forward_dbr_to_placement(self, dbr):
-        placement = self.placement_host + APPLICATION_PORT
-        print("Placement: ", placement)
-        
-        # Schedule DBR at the selected placement location
-        with grpc.insecure_channel(placement) as application_channel:
-            stub = dbr_pb2_grpc.DBRMsgStub(application_channel)
-            response = stub.Schedule(dbr) # Send DBR to placement server
-            if response.success:
-                print("Placed DBR at {placement} via the {self.placement_mode} placement mode")
+query = dbr.queries.add()
+query.key = b"user:123"
+query.status = dbr_pb2.QueryStatus.QUERY_CREATED
 
-def serve():
-    # NOTE: Is 10 correct/ok to be hard coded?
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+dbr.predecessor_location = "127.0.0.1"
+dbr.successor = "DBR-2345"
 
-    dbr_pb2_grpc.add_DBRMsgServicer_to_server(DBRServicer(), server)
-    server.add_insecure_port(ORCHESTRATION_ADDR)
-    server.start()
-    print(f"Orchestration server started, listening on port {ORCHESTRATION_PORT}")
-
-    # Block until server is terminated, graceful shutdown
-    server.wait_for_termination()
-
-if __name__ == '__main__':
-    serve()
+kv = dbr.environment.add()
+kv.key = b"env_key"
+kv.value = b"env_value"
+serialized_dbr = dbr.SerializeToString()
+# -------------------------------------------------------
+# need to add networking/listening code
+# but jist is service.py recieves serialized_dbr
+received_dbr = dbr_pb2.DBR()
+received_dbr.ParseFromString(serialized_dbr)
+example_setting = Placement.DEFAULT
+print(placeDBR(received_dbr, example_setting))

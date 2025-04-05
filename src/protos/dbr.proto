@@ -2,11 +2,9 @@ syntax = "proto3";
 
 package generated;
 
-// used for KeyValue 
 import "database.proto";
 
 enum DBRStatus {
-    // necessary in proto3
     DBR_UNKNOWN = 0;
     DBR_CREATED = 1;
     DBR_RUNNING = 2;
@@ -20,12 +18,15 @@ service DBRMsg {
 }
 
 enum QueryStatus {
-   // necessary in proto3
    QUERY_UNKNOWN = 0;
    QUERY_CREATED = 1;
    QUERY_RUNNING = 2;
    QUERY_SUCCESS = 3;
    QUERY_FAILED = 4;
+}
+
+message DBREnvironment {
+    repeated KeyValue environment = 1;
 }
 
 message DBRReply {
@@ -55,20 +56,10 @@ message DBReq {
     string id = 1;
     string name = 2;
     DBRStatus status = 3;
-
     repeated Query queries = 4;    
-
     string predecessor_location = 5;
     DBReq successor = 6;
-
-    // KeyValue comes from "database.proto"
-    repeated KeyValue environment = 7;
-
-    // serialized business logic in between DBRs
+    DBREnvironment environment = 7;
     optional bytes logic_function = 8;
-
-    // when sending DBR to orchestration 
-    // app layer doesn't know location
     optional string location = 9;
-
 }

@@ -4,61 +4,31 @@ import sys
 import os
 import grpc
 import asyncio
-from globals import (
+from constants import (
     LOGGER,
     APPLICATION_PORT,
-    APPLICATION_ADDR
+    APPLICATION_ADDR,
+    ROOT_DIR
 )
 from concurrent import futures
 
-# Add the src directory to the Python path
-# import sys, os
-sys.path.insert(
-    0, os.path.abspath(os.path.join(os.path.dirname(__file__), "./generated"))
-)
+sys.path.insert(0, (os.path.join(ROOT_DIR, "src", "generated")))
 
-# Now import from generated
-from application.dbr.dbr import DBR
-from application.dbr.dbr_environment import DBREnvironment
 from generated import dbr_pb2, dbr_pb2_grpc
+from generated.dbr_pb2 import DBReq, DBREnvironment, DBReply
 
 
 class ApplicationService(dbr_pb2_grpc.DBRMsgServicer):
     def Schedule(self, request, context):
         try:
-            dbr = self._unmarshal_dbreq(request)
+            dbr = DBReq(request)
             asyncio.run(dbr.execute_queries())
         except Exception as e:
             LOGGER.exception(e)
             return dbr_pb2.DBRReply(success=False)
         else:
             request.successor.execute()
-        return dbr_pb2.DBRReply(success=True)
-
-    def _unmarshal_dbreq(self, dbreq):
-        dbreq_queries = self._unmarshal_queries(dbreq.queries)
-        updated_environment = DBREnvironment({pair.key: pair.value for pair in dbreq.environment})
-        dbr = DBR(
-            dbreq.id,
-            dbreq.name,
-            dbreq.status,
-            dbreq_queries,
-            dbreq.predecessor_location,
-            successor=None,
-            environment=updated_environment,
-        ) # pylint: disable=redundant-keyword-arg
-
-        if not dbreq.successor:
-            return dbr
-
-        dbr.successor = self._unmarshal_dbreq(dbreq.successor)
-        return dbr
-
-    def _unmarshal_queries(self, dbreq_queries):
-        # TODO: Unimplemented
-        breakpoint()
-        raise NotImplementedError
-        
+        return dbr_pb2.DBRReply(success=True)        
         
         
 def serve():

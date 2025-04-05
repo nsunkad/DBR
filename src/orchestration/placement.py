@@ -1,13 +1,14 @@
 # Placement Service
-from enums import Placement
 import sys
 import os
+from enums import Placement
 import grpc
-from globals import (
-    DATABASE_ADDR
+from constants import (
+    DATABASE_ADDR,
+    ROOT_DIR
 )
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'generated')))
+sys.path.insert(0, (os.path.join(ROOT_DIR, "src", "generated")))
 from generated import database_pb2, database_pb2_grpc
 
 DB_CHANNEL = grpc.insecure_channel(DATABASE_ADDR)

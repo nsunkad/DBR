@@ -1,1 +1,0 @@
-ORCHESTRATION_ADDR = "localhost:50052"

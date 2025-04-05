@@ -1,5 +1,5 @@
 from query.base_query import BaseQuery
-from utils.enums import QueryStatus, QueryType
+from enums import QueryStatus, QueryType
 from generated import dbr_pb2
 
 class GetQuery(BaseQuery):

@@ -1,9 +1,8 @@
 import grpc
 from uuid import uuid4
 from pprint import pformat
-from asyncio import TaskGroup
 from dbr.dbr_environment import DBREnvironment
-from utils.enums import DBRStatus, QueryType
+from enums import DBRStatus
 
 from generated import dbr_pb2
 from generated import dbr_pb2_grpc

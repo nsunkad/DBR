@@ -1,8 +1,9 @@
 from uuid import uuid4, UUID
-from typing import Dict, Optional, Any
+from typing import Dict, Optional, Any, List
 from pydantic import BaseModel, Field, field_validator
 from enums import DBRStatus, QueryType
-from abc import ABC, abstractmethod
+from abc import ABC
+import dill
 
 class DBREnvironment(BaseModel):
     """
@@ -28,12 +29,11 @@ class SetQuery(BaseQuery):
 class DBR(BaseModel):
     id: UUID = Field(default_factory=uuid4)
     name: str = ""
-    queries: Dict[UUID, BaseQuery] = Field(default_factory=dict)  # Reference to BaseQuery
+    queries: Dict[UUID, BaseQuery] = Field(default_factory=dict)
     status: DBRStatus = DBRStatus.DBR_CREATED
     predecessor_location: Optional[str] = None
-    successor: "Optional[DBR]" = None  # Recursive reference using forward declaration
     environment: DBREnvironment = Field(default_factory=DBREnvironment)
-    location: Optional[str] = None
+    logic_functions: List[str]
 
     @field_validator("queries", mode="before")
     @classmethod

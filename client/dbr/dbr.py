@@ -1,11 +1,13 @@
 import json
 import requests
 from uuid import uuid4, UUID
-from typing import Dict, Optional
-from pydantic import BaseModel, Field
+from typing import Dict, Optional, List
+from pydantic import BaseModel, Field, field_serializer
 from query.base_query import BaseQuery
 from dbr.dbr_environment import DBREnvironment
 from enums import DBRStatus
+from typing import Callable, Optional
+import dill
 
 
 # DBR references BaseQuery in its queries field using a forward reference.
@@ -15,9 +17,8 @@ class DBR(BaseModel):
     queries: Dict[UUID, BaseQuery] = Field(default_factory=dict)  # Reference to BaseQuery
     status: DBRStatus = DBRStatus.DBR_CREATED
     predecessor_location: Optional[str] = None
-    successor: "Optional[DBR]" = None  # Recursive reference using forward declaration
     environment: DBREnvironment = Field(default_factory=DBREnvironment)
-    location: Optional[str] = None
+    logic_functions: List[Callable[[DBREnvironment], DBREnvironment]] = []
 
     def add_query(self, query: BaseQuery) -> None:
         """
@@ -37,8 +38,18 @@ class DBR(BaseModel):
         """
         self.status = DBRStatus.DBR_RUNNING
         data = self.model_dump_json(exclude_none=True)  # or use .json() if preferred
-        print(data)
         response = requests.post(f"{server_url}/execute", json=data)
-        print(response)
         return response
 
+    @field_serializer("logic_functions")
+    def serialize_logic_function(self, logic_functions: Callable[[DBREnvironment], DBREnvironment]) -> Optional[str]:
+        serialized = []
+        for logic_function in logic_functions:
+            logic_function.__module__ = '__main__'
+            dump = dill.dumps(logic_function).hex()
+            serialized.append(dump)
+        return serialized
+        
+    def then(self, logic_function: Callable[[DBREnvironment], DBREnvironment]):
+        self.logic_functions.append(logic_function)
+        return self

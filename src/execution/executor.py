@@ -1,14 +1,15 @@
 import asyncio
-
+import dill
 import grpc
-from constants import DATABASE_PORT, LOCAL_HOSTNAME
-
+from constants import DATABASE_PORT, LOCAL_HOSTNAME, ORCHESTRATION_PORT
 from database_pb2 import GetRequest, SetRequest
-from dbr_pb2 import GetQuery, SetQuery
 from database_pb2_grpc import DatabaseStub
-
+from dbr_pb2 import EnvEntry
+import dbr_pb2_grpc
 
 class Executor:
+    connection_cache = {}
+
     def __init__(self, queue):
         local_database = f"{LOCAL_HOSTNAME}:{DATABASE_PORT}"
         DB_CHANNEL = grpc.insecure_channel(local_database)
@@ -36,14 +37,52 @@ class Executor:
         raise ValueError("Unsupported query type")    
     
     async def execute_dbr(self, dbr):
-        print("Executing DBR")
+        print("Executing DBR", dbr,)
         loop = asyncio.get_running_loop()
         query_results = await asyncio.gather(*[
             loop.run_in_executor(None, self.execute_query, query) for query in dbr.queries
         ])
-        results = {self.get_query_key(query): result for query, result in zip(dbr.queries, query_results)}
-        print("Results: ", results)
+
+        env = {self.get_query_key(query): result for query, result in zip(dbr.queries, query_results)}
+        
+        for entry in dbr.environment.environment:
+            key = entry.key
+            value = entry.value
+            env[key] = value
+
+        if dbr.logic_functions:
+            print("Executing logic function")
+            b = bytes.fromhex(dbr.logic_functions[0])
+            logic_function = dill.loads(b)
+            print("BEFORE ENV", env)
+            env = logic_function(env)  # Use the deserialized function here
+            print("AFTER ENV", env)
+            dbr.logic_functions.pop(0)
+            for key, value in env.items():
+                dbr.environment.environment.append(EnvEntry(key=key, value=value))
+        
+        print("Results: ", env)
         # TODO: Send results back to client/next layer
+        if dbr.logic_functions:
+            print("more logic functions remain")
+            url = f"localhost:{ORCHESTRATION_PORT}"
+            
+            if url in self.connection_cache:
+                channel = self.connection_cache[url]
+            else:
+                channel = grpc.insecure_channel(url)
+                self.connection_cache[url] = channel
+
+            stub = dbr_pb2_grpc.DBReqServiceStub(channel)
+            response = stub.Schedule(dbr)
+            print(response)
+            return
+        
+        print("DBR execution complete")
+        print("TODO: Send results back to client", dbr.client_location)
+        
+        
+            
 
     def get_query_key(self, query):
         query_type = query.WhichOneof('query_type')

@@ -47,11 +47,42 @@ impl Database for DB {
     
     async fn set(&self, request: Request<SetRequest>) -> Result<Response<SetReply>, Status> {
         let req = request.into_inner();
-        let key = Bytes(req.key);
-        let value = Bytes(req.value);
+
+        let key_clone = req.key.clone();
+        let value_clone = req.value.clone();
+
+        let key = Bytes(key_clone.clone());
+        let value = Bytes(value_clone.clone());
         self.store.set(&key, &value).await;
+
+        let read_regions_response = self.get_read_regions(Request::new(RegionRequest { key: key_clone.clone() })).await?;
+        let replica_regions = read_regions_response.into_inner().regions;
+
+        // Propagate write
+        for replica in replica_regions {            
+            let key = key_clone.clone();
+            let value = value_clone.clone();
+            let replica_clone = replica.clone();
+
+            tokio::spawn(async move {
+                match database::database_client::DatabaseClient::connect(replica_clone).await {
+                    Ok(mut client) => {
+                        let _ = client.set(Request::new(SetRequest {
+                            key: key,
+                            value: value,
+                        })).await;
+                    },
+                    Err(e) => {
+                        eprintln!("Failed to connect to replica: {}", e);
+                    }
+                }
+            });
+        }
+
+
         Ok(Response::new(SetReply { success: true }))
     }
+
     async fn get_read_regions(&self, request: Request<RegionRequest>) -> Result<Response<ReadRegionReply>, Status> {
         println!("Received get_read_regions request");
         let key: Bytes = request.into_inner().key.into();

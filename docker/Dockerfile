@@ -1,4 +1,5 @@
-FROM ubuntu:20.04
+# FROM ubuntu:20.04
+FROM python:3.13-bullseye
 
 # Install necessary packages: iproute2 for tc, python3, and any other needed tools.
 RUN apt-get update && apt-get install -y gcc libpq-dev iproute2 python3 python3-pip python3.8-venv python3-dev python3-pip python3-venv python3-wheel

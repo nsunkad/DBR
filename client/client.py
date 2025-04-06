@@ -18,7 +18,7 @@ def change(env):
 
 def run():
     INITIALIZATION_PORT = "50054"
-    server_url = f"http://127.0.0.1:{INITIALIZATION_PORT}"
+    server_url = f"http://apirani2@sp25-cs525-0301.cs.illinois.edu:{INITIALIZATION_PORT}"
 
     get_q = GetQ(b"key3")
     dbr = DBR(name="TestDBR")
@@ -29,6 +29,7 @@ def run():
     response = dbr.execute(server_url)
     print(response)
 
+    return
     id = str(dbr.id)
     while True:
         response = requests.get(f"{server_url}/check?id={id}")

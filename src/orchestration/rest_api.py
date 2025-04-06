@@ -37,6 +37,7 @@ def convert_dbr_to_proto(dbr):
 
     print("queries")
     for query in dbr.queries.values():
+        print(query)
         if query.query_type == QueryType.GET:
             proto_query = dbr_pb2.GetQuery(id=str(query.id), key=query.key)
             proto_dbr.queries.append(dbr_pb2.Query(get_query=proto_query))

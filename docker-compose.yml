@@ -12,3 +12,4 @@ services:
     restart: unless-stopped
     environment:
       ROOT_DIR: /root
+    hostname: ${HOSTNAME}

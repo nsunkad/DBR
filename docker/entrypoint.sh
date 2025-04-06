@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+
+echo "ROOT_DIR is: $ROOT_DIR"
 cd $ROOT_DIR
 
 python3 -m venv $ROOT_DIR/venv

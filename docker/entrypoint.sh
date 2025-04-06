@@ -2,8 +2,8 @@
 set -e
 cd $ROOT_DIR
 
-python3 -m venv $ROOT_DIR/src/venv
-source venv/bin/activate
+python3 -m venv $ROOT_DIR/venv
+source $ROOT_DIR/venv/bin/activate
 pip3 install --upgrade pip
 pip3 install --upgrade setuptools
 pip3 install wheel

@@ -1,17 +1,12 @@
-from uuid import uuid4
+from uuid import uuid4, UUID
+from typing import Optional
 from abc import ABC, abstractmethod
+from pydantic import BaseModel, Field
+from enums import QueryType
 
-class BaseQuery(ABC):
-    """
-    Abstract query class
-    """
-
-    def __init__(self):
-        self.id = uuid4()
-        self.dbr = None
-
-    """Method to marshal the query. Implemented in subclasses."""
-    @abstractmethod
-    def marshal(self):
-        raise NotImplementedError
-        
+# Define BaseQuery with a forward reference to DBR
+class BaseQuery(BaseModel, ABC):
+    id: UUID = Field(default_factory=uuid4)
+    query_type: QueryType = Field(default_factory=QueryType)
+    key: bytes = None
+    value: Optional[bytes] = None

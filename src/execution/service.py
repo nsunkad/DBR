@@ -1,38 +1,47 @@
 import sys
+import threading
 import grpc
 import asyncio
 from execution.executor import Executor
 from constants import (
-    APPLICATION_PORT,
-    APPLICATION_ADDR,
+    EXECUTION_PORT,
 )
 from concurrent import futures
 
 from dbr_pb2 import DBReq, DBREnvironment, DBRReply
-from dbr_pb2_grpc import DBReqService
 import dbr_pb2_grpc
+from utils import start_background_loop
 
-class ApplicationService(DBReqService):
-    queue = asyncio.Queue()
-    executor = Executor(queue)
-    asyncio.to_thread(executor.run())
-    
-    def Schedule(self, request, context):
-        dbr = DBReq(request)
-        self.queue.put_nowait(dbr)
-        return DBRReply(success=True)
+class ExecutionService(dbr_pb2_grpc.DBReqServiceServicer):
+    def __init__(self):
+        self.loop = asyncio.new_event_loop()
+        self.thread = threading.Thread(target=start_background_loop, args=(self.loop,), daemon=True)
+        self.thread.start()
         
+        asyncio.run_coroutine_threadsafe(self._start_worker(), self.loop)
+
+    def Schedule(self, dbreq, context):
+        self.loop.call_soon_threadsafe(self.queue.put_nowait, dbreq)
+        return DBRReply(success=True)
+    
+    async def _start_worker(self):
+        self.queue = asyncio.Queue()
+        self.executor = Executor(self.queue)
+        asyncio.create_task(self.executor.run())
+
+
 def serve():
-    application_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    execution_server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
 
-    dbr_pb2_grpc.add_DBReqServiceServicer_to_server(ApplicationService(), application_server)
+    dbr_pb2_grpc.add_DBReqServiceServicer_to_server(ExecutionService(), execution_server)
 
-    application_server.add_insecure_port(APPLICATION_ADDR)
-    application_server.start()
-    print(f"Application server started, listening on port {APPLICATION_PORT}")
+    execution_address = f"0.0.0.0:{EXECUTION_PORT}"
+    execution_server.add_insecure_port(execution_address)
+    execution_server.start()
+    print(f"Execution server started, listening on port {EXECUTION_PORT}")
 
     # Block until server is terminated, graceful shutdown
-    application_server.wait_for_termination()
+    execution_server.wait_for_termination()
 
 
 if __name__ == "__main__":

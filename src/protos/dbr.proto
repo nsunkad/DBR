@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package generated;
 
-import "database.proto";
-
 enum DBRStatus {
     DBR_UNKNOWN = 0;
     DBR_CREATED = 1;
@@ -24,8 +22,13 @@ enum QueryStatus {
    QUERY_FAILED = 4;
 }
 
+message EnvEntry {
+  string key = 1;   // key must be 8 bytes
+  bytes value = 2; // corresponding value
+}
+
 message DBREnvironment {
-    repeated KeyValue environment = 1;
+    repeated EnvEntry environment = 1;
 }
 
 message DBRReply {
@@ -57,8 +60,7 @@ message DBReq {
     DBRStatus status = 3;
     repeated Query queries = 4;    
     string predecessor_location = 5;
-    DBReq successor = 6;
     DBREnvironment environment = 7;
-    optional bytes logic_function = 8;
-    optional string location = 9;
+    string client_location = 9;
+    repeated string logic_functions = 8;
 }

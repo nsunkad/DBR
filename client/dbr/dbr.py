@@ -1,84 +1,55 @@
-import grpc
-from uuid import uuid4
-from pprint import pformat
+import json
+import requests
+from uuid import uuid4, UUID
+from typing import Dict, Optional, List
+from pydantic import BaseModel, Field, field_serializer
+from query.base_query import BaseQuery
 from dbr.dbr_environment import DBREnvironment
 from enums import DBRStatus
-
-from generated import dbr_pb2
-from generated import dbr_pb2_grpc
-from generated.database_pb2_grpc import DatabaseStub
+from typing import Callable, Optional
+import dill
 
 
-# TODO: add static typing
-class DBR:
-    """
-    A DBR (DBRequest) is recursively defined as a chain of DBRs. A single DBR is the largest subset of parallelizable tasks in the program
-    """
-    def __init__(
-        self,
-        id=None,
-        name=None,
-        status=DBRStatus.DBR_CREATED,
-        queries={},
-        predecessor_location=None,
-        successor=None,
-        environment=None,
-    ):
+# DBR references BaseQuery in its queries field using a forward reference.
+class DBR(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
+    name: str = ""
+    queries: Dict[UUID, BaseQuery] = Field(default_factory=dict)  # Reference to BaseQuery
+    status: DBRStatus = DBRStatus.DBR_CREATED
+    predecessor_location: Optional[str] = None
+    environment: DBREnvironment = Field(default_factory=DBREnvironment)
+    logic_functions: List[Callable[[DBREnvironment], DBREnvironment]] = []
+
+    def add_query(self, query: BaseQuery) -> None:
         """
-
-        Initialize a DBRequest
-
+        Adds a query to the DBR and sets its back reference.
         """
-        self.id = uuid4()
-        self.name = name
-        self.status = status
-        self.queries = queries
-        self.predecessor_location = predecessor_location
-        self.successor = successor
-        self.environment = DBREnvironment()
-        self.location = None
-
-    def add_query(self, query) -> None:
-        """
-        Adds query to associated DBR. DBTs are constructed by the query
-        """
-        query.dbr = self  # Back pointer for accessing database connection
         self.queries[query.id] = query
 
-    def remove_query(self, query) -> None:
+    def remove_query(self, query: BaseQuery) -> None:
         """
-        Removes query from associated DBR
+        Removes a query from the DBR.
         """
-        if query.id in self.queries:
-            self.queries.pop(query.id)
+        self.queries.pop(query.id, None)
 
-    def execute(self, server_url):
+    def execute(self, server_url: str):
+        """
+        Executes the DBR by converting it to JSON.
+        """
         self.status = DBRStatus.DBR_RUNNING
-        # Send DBR over orchestration channel for placement
-        with grpc.insecure_channel(server_url) as orchestration_channel:
-            orchestration_stub = dbr_pb2_grpc.DBRMsgStub(orchestration_channel)
-
-            request = self._marshal_dbr(self)
-            response = orchestration_stub.Send(request)
-
-            if not response.success:
-                print("DBR orchestration failed")
-            
+        data = self.model_dump_json(exclude_none=True)  # or use .json() if preferred
+        response = requests.post(f"{server_url}/execute", json=data)
         return response
 
-    def _marshal_dbr(self, dbr):
-        dbreq = dbr_pb2.DBReq()
-        dbreq.id = str(dbr.id)
-        dbreq.name = dbr.name
-        dbreq.status = int(dbr.status)
+    @field_serializer("logic_functions")
+    def serialize_logic_function(self, logic_functions: Callable[[DBREnvironment], DBREnvironment]) -> Optional[str]:
+        serialized = []
+        for logic_function in logic_functions:
+            logic_function.__module__ = '__main__'
+            dump = dill.dumps(logic_function).hex()
+            serialized.append(dump)
+        return serialized
         
-        for query in self.queries.values():
-            dbreq.queries.append(query.marshal())
-        dbreq.predecessor_location = str(dbr.predecessor_location)
-
-        if self.successor:
-            dbreq.successor = self._marshal_dbr(self.successor)
-        return dbreq
-
-    def __repr__(self):
-        return f"DBR(queries={pformat(self.queries)})"
+    def then(self, logic_function: Callable[[DBREnvironment], DBREnvironment]):
+        self.logic_functions.append(logic_function)
+        return self

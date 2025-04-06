@@ -1,3 +1,4 @@
+import asyncio
 import csv
 
 def load_latencies(latencies_csv):
@@ -19,7 +20,7 @@ def load_latencies(latencies_csv):
             region = row[region_key].strip()
             latencies[region] = {}
             for col in reader.fieldnames[1:]:
-                latencies[region][col.strip()] = row[col].strip()
+                latencies[region][col.strip()] = float(row[col].strip())
     return latencies
 
 def load_hostname_regions(hostname_region_csv):
@@ -32,14 +33,20 @@ def load_hostname_regions(hostname_region_csv):
     server2.example.com,us-west
     server3.example.com,eu
     """
-    hostname_regions = []
+    hostname_regions_mappings = {}
+    region_hostname_mappings = {}
     with open(hostname_region_csv, newline="") as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
             hostname = row["hostname"].strip()
             region = row["region"].strip()
-            hostname_regions.append((hostname, region))
-    return hostname_regions
+
+            hostname_regions_mappings[hostname] = region
+            if region not in region_hostname_mappings:
+                region_hostname_mappings[region] = []
+            region_hostname_mappings[region].append(hostname)
+
+    return hostname_regions_mappings, region_hostname_mappings
 
 
 def import_protobuf():
@@ -70,3 +77,8 @@ def import_protobuf():
     import_module("generated.database_pb2_grpc", f"{ROOT_DIR}/src/generated/database_pb2_grpc.py", alias="database_pb2_grpc")
     import_module("generated.dbr_pb2", f"{ROOT_DIR}/src/generated/dbr_pb2.py", alias="dbr_pb2")
     import_module("generated.dbr_pb2_grpc", f"{ROOT_DIR}/src/generated/dbr_pb2_grpc.py", alias="dbr_pb2_grpc")
+
+def start_background_loop(loop):
+    """Run an asyncio event loop in a background thread."""
+    asyncio.set_event_loop(loop)
+    loop.run_forever()

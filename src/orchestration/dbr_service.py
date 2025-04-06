@@ -9,7 +9,7 @@ from enums import Placement
 from utils import start_background_loop
 
 class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
-    def __init__(self, placement_host="localhost", placement_mode=Placement.BRUTE):
+    def __init__(self, placement_host="localhost", placement_mode=Placement.DEFAULT):
         self.placement_mode = placement_mode
         self.placement_host = placement_host
         self.connection_cache = {}

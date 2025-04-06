@@ -1,10 +1,12 @@
+import base64
 import json
 from flask import Flask, request, jsonify
 from enums import DBRStatus, QueryType
 from generated import dbr_pb2
 from orchestration.dbr_service import dbr_servicer
 from orchestration.types import DBR
-from constants import LOCAL_REGION
+from constants import LOCAL_HOSTNAME
+import pickle
 
 app = Flask(__name__)
 dbr_statuses = {}
@@ -15,7 +17,7 @@ def convert_dbr_to_proto(dbr):
     proto_dbr.id = str(dbr.id)
     proto_dbr.name = dbr.name
     proto_dbr.status = dbr.status.value
-    proto_dbr.client_location = LOCAL_REGION
+    proto_dbr.client_location = LOCAL_HOSTNAME
 
     print("PREDECESSOR")
     if dbr.predecessor_location is not None:
@@ -68,24 +70,28 @@ def execute_dbr():
     print("POST-SCHEDULE")
     
     if db_id := req_data.get('id'):
-        dbr_statuses[db_id] = {"status": DBRStatus.DBR_RUNNING, "result": None}
+        print(db_id)
+        dbr_statuses[db_id] = {"status": DBRStatus.DBR_RUNNING, "env": None}
     
     return jsonify({"success": response.success})
 
 @app.route('/set_dbr_status', methods=['POST'])
 def set_dbr_status():
-    data = request.get_json()
+    data = json.loads(request.get_json())
     db_id = data.get("id")
     status = data.get("status")
-    result = data.get("result")
+    env = data.get("env")
+
     if not db_id:
         return jsonify({"success": False, "error": "No id provided"}), 400
-    dbr_statuses[db_id] = {"status": status, "result": result}
+    
+    dbr_statuses[db_id] = {"status": status, "env": env}
     return jsonify({"success": True})
 
-@app.route('/check_dbr_status', methods=['GET'])
+@app.route('/check', methods=['GET'])
 def check_dbr_status():
     db_id = request.args.get("id")
+    print(db_id, db_id in dbr_statuses)
     if not db_id:
         return jsonify({"error": "No id provided"}), 400
     if db_id in dbr_statuses:

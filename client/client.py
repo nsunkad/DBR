@@ -1,7 +1,12 @@
+import base64
+import json
+import pickle
 from dbr.dbr import DBR
 from dbr.dbr_environment import DBREnvironment
+from enums import DBRStatus
 from query.get_query import GetQuery as GetQ
 from query.set_query import SetQuery as SetQ
+import requests
 
 def double(env):
     env |= {"new_val": env[b"key3"] + env[b"key3"]}
@@ -24,10 +29,24 @@ def run():
     response = dbr.execute(server_url)
     print(response)
 
-    # env = dbr.environment
-    # dbr2 = DBR(name="TestDBR2")
-    # # dbr2.add_query(SetQ(b"key4", b"value4"))
-    # dbr2.add_query(SetQ(env[b"new_val"], b"value4"))
+    id = str(dbr.id)
+    while True:
+        response = requests.get(f"{server_url}/check?id={id}")
+        if response.status_code == 200:
+            data = response.json()
+            status = data["status"]
+            if status == DBRStatus.DBR_FAILED:
+                print("FAILED")
+                break
+            
+            if status == DBRStatus.DBR_SUCCESS:
+                print("SUCCESS")
+                env = data["env"]
+                env = base64.b64decode(env)
+                env = pickle.loads(env)
+                print(env)
+                break
+    #     print(response)
 
     # dbr.successor = dbr2
 

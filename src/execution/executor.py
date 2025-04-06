@@ -1,11 +1,17 @@
+import base64
+import json
 import asyncio
 import dill
 import grpc
-from constants import DATABASE_PORT, LOCAL_HOSTNAME, ORCHESTRATION_PORT
+import requests
+from constants import DATABASE_PORT, INITIALIZATION_PORT, LOCAL_HOSTNAME, ORCHESTRATION_PORT
 from database_pb2 import GetRequest, SetRequest
 from database_pb2_grpc import DatabaseStub
 from dbr_pb2 import EnvEntry
 import dbr_pb2_grpc
+import pickle
+
+from enums import DBRStatus
 
 class Executor:
     connection_cache = {}
@@ -81,6 +87,17 @@ class Executor:
         print("DBR execution complete")
         print("TODO: Send results back to client", dbr.client_location)
         
+        url = f"http://{dbr.client_location}:{INITIALIZATION_PORT}/set_dbr_status"
+        body = {
+            "id": dbr.id,
+            "status": DBRStatus.DBR_SUCCESS,
+            "env": base64.b64encode(pickle.dumps(env)).decode('utf-8'),
+        }
+        print("DATA", url, body)
+
+        response = requests.post(url, json=json.dumps(body))
+        print(response)
+        return
         
             
 

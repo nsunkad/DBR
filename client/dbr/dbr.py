@@ -1,11 +1,12 @@
-import json
+import base64
+import pickle
 import requests
 from uuid import uuid4, UUID
 from typing import Dict, Optional, List
 from pydantic import BaseModel, Field, field_serializer
 from query.base_query import BaseQuery
 from dbr.dbr_environment import DBREnvironment
-from enums import DBRStatus
+from enums import DBRStatus, Placement
 from typing import Callable, Optional
 import dill
 
@@ -19,6 +20,7 @@ class DBR(BaseModel):
     predecessor_location: Optional[str] = None
     environment: DBREnvironment = Field(default_factory=DBREnvironment)
     logic_functions: List[Callable[[DBREnvironment], DBREnvironment]] = []
+    placement: Placement = Placement.DEFAULT
 
     def add_query(self, query: BaseQuery) -> None:
         """
@@ -39,7 +41,22 @@ class DBR(BaseModel):
         self.status = DBRStatus.DBR_RUNNING
         data = self.model_dump_json(exclude_none=True)  # or use .json() if preferred
         response = requests.post(f"{server_url}/execute", json=data)
-        return response
+
+        id = str(self.id)
+        while True:
+            response = requests.get(f"{server_url}/check?id={id}")
+            if response.status_code == 200:
+                data = response.json()
+                status = data["status"]
+                if status == DBRStatus.DBR_SUCCESS:
+                    env = data["env"]
+                    env = base64.b64decode(env)
+                    env = pickle.loads(env)
+                    return env
+
+                if status == DBRStatus.DBR_FAILED:
+                    print("FAILED")
+                    break
 
     @field_serializer("logic_functions")
     def serialize_logic_function(self, logic_functions: Callable[[DBREnvironment], DBREnvironment]) -> Optional[str]:

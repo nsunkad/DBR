@@ -1,12 +1,9 @@
-import base64
-import json
-import pickle
 from dbr.dbr import DBR
-from dbr.dbr_environment import DBREnvironment
-from enums import DBRStatus
+from enums import Placement
 from query.get_query import GetQuery as GetQ
 from query.set_query import SetQuery as SetQ
-import requests
+import time
+
 
 def double(env):
     env |= {"new_val": env[b"key3"] + env[b"key3"]}
@@ -21,35 +18,16 @@ def run():
     server_url = f"http://apirani2@sp25-cs525-0301.cs.illinois.edu:{INITIALIZATION_PORT}"
 
     get_q = GetQ(b"key3")
-    dbr = DBR(name="TestDBR")
+    dbr = DBR(name="TestDBR", placement=Placement.DEFAULT)
     dbr.add_query(get_q)
     dbr = dbr.then(double).then(change)
-    print(dbr)
 
-    response = dbr.execute(server_url)
-    print(response)
+    start_time = time.time()
+    env = dbr.execute(server_url)
+    end_time = time.time()
+    print(f"Execution time: {end_time - start_time} seconds")   
+    print(env)
 
-    return
-    id = str(dbr.id)
-    while True:
-        response = requests.get(f"{server_url}/check?id={id}")
-        if response.status_code == 200:
-            data = response.json()
-            status = data["status"]
-            if status == DBRStatus.DBR_FAILED:
-                print("FAILED")
-                break
-            
-            if status == DBRStatus.DBR_SUCCESS:
-                print("SUCCESS")
-                env = data["env"]
-                env = base64.b64decode(env)
-                env = pickle.loads(env)
-                print(env)
-                break
-    #     print(response)
-
-    # dbr.successor = dbr2
 
 if __name__ == '__main__':
     run()

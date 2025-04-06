@@ -20,7 +20,7 @@ class DBR(BaseModel):
     predecessor_location: Optional[str] = None
     environment: DBREnvironment = Field(default_factory=DBREnvironment)
     logic_functions: List[Callable[[DBREnvironment], DBREnvironment]] = []
-    placement: Placement = Placement.DEFAULT
+    placement: Placement = Field(default=Placement.DEFAULT)
 
     def add_query(self, query: BaseQuery) -> None:
         """
@@ -34,14 +34,20 @@ class DBR(BaseModel):
         """
         self.queries.pop(query.id, None)
 
+    def execute_inner(self):
+        env = self.execute("localhost")
+        return env
+
     def execute(self, server_url: str):
         """
         Executes the DBR by converting it to JSON.
         """
         self.status = DBRStatus.DBR_RUNNING
         data = self.model_dump_json(exclude_none=True)  # or use .json() if preferred
+        print(data)
         response = requests.post(f"{server_url}/execute", json=data)
 
+        return {}
         id = str(self.id)
         while True:
             response = requests.get(f"{server_url}/check?id={id}")

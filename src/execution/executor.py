@@ -11,7 +11,8 @@ from dbr_pb2 import EnvEntry
 import dbr_pb2_grpc
 import pickle
 
-from enums import DBRStatus
+from enums import DBRStatus, Placement
+from orchestration.types import DBR, GetQuery, SetQuery
 
 class Executor:
     connection_cache = {}
@@ -61,6 +62,13 @@ class Executor:
             b = bytes.fromhex(dbr.logic_functions[0])
             logic_function = dill.loads(b)
             print("BEFORE ENV", env)
+
+            print(logic_function)
+            logic_function.__globals__['GetQuery'] = GetQuery
+            logic_function.__globals__['SetQuery'] = SetQuery
+            logic_function.__globals__['DBR'] = DBR
+            logic_function.__globals__['Placement'] = Placement
+
             env = logic_function(env)  # Use the deserialized function here
             print("AFTER ENV", env)
             dbr.logic_functions.pop(0)

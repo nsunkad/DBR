@@ -7,9 +7,9 @@ class Placement(IntEnum):
     Smart placement: optimized
     """
 
-    DEFAULT = 1
-    SMART = 2
-    BRUTE = 3
+    DEFAULT = 0
+    SMART = 1
+    BRUTE = 2
 
 
 class DBRStatus(IntEnum):

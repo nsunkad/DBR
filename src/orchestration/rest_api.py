@@ -18,6 +18,7 @@ def convert_dbr_to_proto(dbr):
     proto_dbr.name = dbr.name
     proto_dbr.status = dbr.status.value
     proto_dbr.client_location = LOCAL_HOSTNAME
+    proto_dbr.placement = dbr.placement.value
 
     print("PREDECESSOR")
     if dbr.predecessor_location is not None:
@@ -57,7 +58,9 @@ def convert_dbr_to_proto(dbr):
 def execute_dbr():
     print("IN")
     req_data = json.loads(request.get_json())
+    print("AFTER")
     try:
+        print(req_data)
         in_dbr = DBR.model_validate(req_data)
         print("INIT DBR", in_dbr)
         proto_dbr = convert_dbr_to_proto(in_dbr)

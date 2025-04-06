@@ -54,6 +54,12 @@ message Query {
    }
 }
 
+enum Placement {
+    DEFAULT = 0;
+    SMART = 1;
+    BRUTE = 2;
+}
+
 message DBReq {
     string id = 1;
     string name = 2;
@@ -63,4 +69,5 @@ message DBReq {
     DBREnvironment environment = 7;
     string client_location = 9;
     repeated string logic_functions = 8;
+    Placement placement = 10;
 }

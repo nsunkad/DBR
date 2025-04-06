@@ -9,8 +9,7 @@ from enums import Placement
 from utils import start_background_loop
 
 class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
-    def __init__(self, placement_host="localhost", placement_mode=Placement.DEFAULT):
-        self.placement_mode = placement_mode
+    def __init__(self, placement_host="localhost"):
         self.placement_host = placement_host
         self.connection_cache = {}
 
@@ -43,7 +42,7 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
         
     def _handle_dbr(self, dbreq):
         print("Handling DBR", dbreq)
-        locations = placeDBR(dbreq, self.placement_mode)
+        locations = placeDBR(dbreq, dbreq.placement)
         print(locations)
         hostnames = []
         for loc in locations:
@@ -54,6 +53,7 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
             return self._forward_dbr(dbreq, url)
 
         selected_hostname = random.choice(hostnames)
+        selected_hostname = "localhost"
 
         url = f"{selected_hostname}:{EXECUTION_PORT}"
         self._forward_dbr(dbreq, url)
@@ -68,7 +68,7 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
         stub = dbr_pb2_grpc.DBReqServiceStub(channel)
         response = stub.Schedule(dbr) # Send DBR to placement server
         if response.success:
-            print(f"Placed DBR at {url} via {self.placement_mode} placement mode")
+            print(f"Placed DBR at {url} via {dbr.placement} placement mode")
 
 
 dbr_servicer = DBRServicer()

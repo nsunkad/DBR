@@ -1,10 +1,6 @@
 #!/bin/bash
 
-if [[ ! -n "$USER" ]]; then
-    echo "Set user environment variable!"
-    exit 1
-fi
-
+USER=apirani2
 
 # Check if a command was provided as an argument.
 if [ "$#" -eq 0 ]; then
@@ -12,7 +8,7 @@ if [ "$#" -eq 0 ]; then
     exit 1
 fi
 
-HOSTFILE="config/vms.dat"
+HOSTFILE="$ROOT_DIR/config/vms.dat"
 
 # Check if the host file exists.
 if [ ! -f "$HOSTFILE" ]; then
@@ -32,6 +28,6 @@ while IFS= read -r host; do
     if [[ -n "$host" ]]; then
         TARGET="$USER@$host"
         echo "Executing \"$command_to_execute\" on $TARGET:"
-        ssh $TARGET "$command_to_execute" < /dev/null >> "out/$host.out"
+        ssh $TARGET "$command_to_execute" < /dev/null >> "out/$host.out" &
     fi
 done < "$HOSTFILE"

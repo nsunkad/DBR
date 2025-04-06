@@ -11,7 +11,6 @@ pip install --upgrade setuptools
 pip install wheel
 pip install -r requirements.txt
 
-
 cd $ROOT_DIR/src
 
 # Run the latency configuration script (adjust parameters as needed)
@@ -19,6 +18,8 @@ python -m scripts.gen_protos
 python -m scripts.set_latencies --interface eth0
 echo "Latency configuration applied. Container will now remain running."
 
+
+cd $ROOT_DIR/src/database && cargo run $ROOT_DIR/config/vms.dat&
 python -m execution.service &
 python -m orchestration.service &
 echo "Execution and orchestration servers started. Container will now remain running."

@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-import csv
 import argparse
 import subprocess
 import sys
 import socket
-from src.utils import load_latencies, load_hostname_regions
+from constants import LOCAL_HOSTNAME, LOCAL_REGION, REGION_LATENCIES, HOSTNAME_REGION_MAPPINGS
 
 def run_command(cmd):
     """Helper function to run a shell command and print it."""
@@ -31,50 +30,7 @@ def main():
     parser.add_argument(
         "--interface", required=True, help="Network interface (e.g., eth0)"
     )
-    parser.add_argument(
-        "--latencies-csv",
-        required=True,
-        help="CSV file with a latency matrix (regions vs regions)",
-    )
-    parser.add_argument(
-        "--hostname-region-csv",
-        required=True,
-        help="CSV file mapping hostnames to their region (headers: hostname,region)",
-    )
     args = parser.parse_args()
-
-    # Load CSV files
-    try:
-        latencies = load_latencies(args.latencies_csv)
-    except Exception as e:
-        print(f"Error loading latencies CSV: {e}", file=sys.stderr)
-        sys.exit(1)
-    
-    try:
-        hostname_regions = load_hostname_regions(args.hostname_region_csv)
-    except Exception as e:
-        print(f"Error loading hostname-region CSV: {e}", file=sys.stderr)
-        sys.exit(1)
-
-    # Determine the local region by comparing the local hostname to the mapping.
-    local_hostname = socket.getfqdn()
-    local_region = None
-    for host, region in hostname_regions:
-        if host == local_hostname:
-            local_region = region
-            break
-
-    if local_region is None:
-        print(f"Local hostname '{local_hostname}' not found in the hostname-region mapping. "
-              "Please add it or specify your region manually.", file=sys.stderr)
-        sys.exit(1)
-    
-    print(f"Determined local region as '{local_region}' for hostname '{local_hostname}'.")
-
-    # Validate that the local region exists in the latencies matrix
-    if local_region not in latencies:
-        print(f"Local region '{local_region}' not found in latencies CSV", file=sys.stderr)
-        sys.exit(1)
 
     # Clear existing tc settings on the interface
     run_command(f"tc qdisc del dev {args.interface} root || true")
@@ -85,21 +41,21 @@ def main():
     counter = 10
 
     # Apply tc rules for all hostnames except the local host
-    for hostname, region in hostname_regions:
-        if hostname == local_hostname:
+    for hostname, region in HOSTNAME_REGION_MAPPINGS.items():
+        if hostname == LOCAL_HOSTNAME:
             continue  # Skip local host
 
         ips = resolve_hostname(hostname)
         if not ips:
             continue
 
-        if region not in latencies[local_region]:
-            print(f"Region '{region}' not found for local region '{local_region}' in latencies CSV", file=sys.stderr)
+        if region not in REGION_LATENCIES[LOCAL_REGION]:
+            print(f"Region '{region}' not found for local region '{LOCAL_REGION}' in latencies CSV", file=sys.stderr)
             continue
 
-        delay = latencies[local_region][region]
+        delay = REGION_LATENCIES[LOCAL_REGION][region]
         print(f"Configuring hostname '{hostname}' (region: {region}) with {delay}ms delay "
-              f"(from local region '{local_region}'). Resolved IPs: {ips}")
+              f"(from local region '{LOCAL_REGION}'). Resolved IPs: {ips}")
 
         # Create a new HTB class for this hostname
         run_command(f"tc class add dev {args.interface} parent 1: classid 1:{counter} htb rate 100mbit")

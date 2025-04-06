@@ -1,4 +1,7 @@
-black==25.1.0
-mypy==1.15.0
+dill
+Flask
 grpcio
-grpcio-tools
+grpcio_tools
+protobuf
+pydantic
+Requests

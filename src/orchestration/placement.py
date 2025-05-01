@@ -48,14 +48,14 @@ def get_candidate_locations(placement_mode: Placement, dbr, shard_locations):
 
 # TEST: with read replicas after csv filled in
 def placeDBR(dbr, place: Placement):
-    shard_locations = get_shard_locations(dbr.queries)
-    shard_hostnames = set()
+    shard_hostnames = get_shard_hostnames(dbr.queries)
+    shard_locations = set()
 
-    for location in shard_locations:
-        shard_hostnames.update(REGION_HOSTNAME_MAPPINGS[location])
+    for hostname in shard_hostnames:
+        shard_locations.update(HOSTNAME_REGION_MAPPINGS[hostname])
     
-    assert len(shard_locations) > 0
     assert len(shard_hostnames) > 0
+    assert len(shard_locations) > 0
 
     print("shard locations: ", shard_locations)
     print("shard hostnames: ", shard_hostnames)
@@ -85,20 +85,17 @@ def placeDBR(dbr, place: Placement):
             best_locations.append(candidate_location)
     return best_locations
 
-# Returns all UNIQUE locations for queries of a DBR
-def get_shard_locations(queries): 
+# Returns all UNIQUE hostnames for queries of a DBR
+def get_shard_hostnames(queries): 
     print("getting locations", queries)
-    locations = set()
+    hostnames = set()
     for query in queries: 
-        location = query_to_location(query)
-        locations.update(location)
-    print("locations: ", locations)
-    return locations
+        hosts = query_to_hostnames(query)
+        hostnames.update(hosts)
+    print("hostnames: ", hostnames)
+    return hostnames
 
-def query_to_location(query):
-    # TODO: DEBUG
-    # return [LOCAL_REGION]
-
+def query_to_hostnames(query):
     print("IN QUERY TO LOCATION")
     query_type = query.WhichOneof('query_type')
     if query_type == "get_query":

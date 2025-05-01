@@ -1,14 +1,11 @@
 services:
   simulator:
-    build:
-      context: .
-      dockerfile: ./docker/Dockerfile
+    image: aydanpirani/dbr-simulator:latest
     ports:
       - "50051:50051"
       - "50052:50052"
       - "50053:50053"
       - "50054:50054"
-    container_name: dbr-simulator
     restart: unless-stopped
     environment:
       ROOT_DIR: /root

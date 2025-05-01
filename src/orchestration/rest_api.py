@@ -63,7 +63,7 @@ def check_dbr_status():
     else:
         return jsonify({"error": "No such DBR"}), 404
     
-@app.route('dump', methods=['POST'])
+@app.route('/dump', methods=['POST'])
 def dump():
     data = request.get_json()
     dbr_id = data.get("id")
@@ -74,7 +74,7 @@ def dump():
     
     cleaned_data = ",".join(f"{key};{value}" for key, value in data.items() if key != "id")
     file_dumps[dbr_id].write(f"DUMP {recv_time} {cleaned_data}\n")
-    
+
     return jsonify({"success": True})
 
 @app.route('/all-status', methods=['GET'])

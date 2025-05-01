@@ -22,6 +22,20 @@ def change(env):
     env |= {"new_val": env["new_val"] + b"hithere!"}
     return env
 
+def set_val(env):
+    key = bytes(env["new_val"])
+    set_q = SetQuery(key, b"chained_key")
+    dbr = DBR()
+    dbr.add_query(set_q)
+    return dbr
+
+def get_val(env):
+    key = bytes(env["new_val"])
+    get_q = GetQuery(key)
+    dbr = DBR()
+    dbr.add_query(get_q)
+    return dbr
+
 def run():
     INITIALIZATION_PORT = "50054"
 
@@ -34,8 +48,7 @@ def run():
     dbr = DBR()
     dbr.name = "TestDBR"
     dbr.add_query(get_q)
-    # dbr = dbr.then_transform(double).then_execute(new_dbr).then_transform(change)A
-    dbr = dbr.then_transform(double).then_transform(double_newval).then_transform(change)
+    dbr = dbr.then_transform(double).then_transform(double_newval).then_transform(change).then_execute(set_val)
 
     start_time = time.time()
     env = dbr.execute(server_url)

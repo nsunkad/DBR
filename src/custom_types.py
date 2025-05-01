@@ -4,7 +4,7 @@ from uuid import uuid4, UUID
 from typing import Callable, Dict, Optional, Any, List
 from pydantic import BaseModel, Field, field_validator
 import requests
-from constants import INITIALIZATION_PORT
+from constants import INITIALIZATION_PORT, LOCAL_HOSTNAME
 from enums import DBRStatus, QueryType, Placement, FunctionType
 from abc import ABC
 import dill
@@ -58,6 +58,7 @@ class DBR(BaseModel):
     status: DBRStatus = DBRStatus.DBR_CREATED
     predecessor_location: Optional[str] = None
     environment: DBREnvironment = Field(default_factory=DBREnvironment)
+    client_location: str = LOCAL_HOSTNAME
     logic_functions: List[Function] = []
     placement: Placement = Field(default=Placement.DEFAULT)
 
@@ -86,4 +87,5 @@ class DBR(BaseModel):
     def remove_query(self, query: BaseQuery) -> None:
         self.queries.pop(query.id, None)
 
+    
     

@@ -12,7 +12,7 @@ app = Flask(__name__)
 dbr_statuses = {}
 
 ROOT_DIR = os.environ.get("ROOT_DIR", None)
-os.mkdirs(os.path.join(ROOT_DIR, "dumps"), exist_ok=True)
+os.makedirs(os.path.join(ROOT_DIR, "dumps"), exist_ok=True)
 
 
 @app.route('/execute', methods=['POST'])

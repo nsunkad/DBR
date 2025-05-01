@@ -124,7 +124,7 @@ class Executor:
             new_proto_dbr = convert_dbr_to_proto(new_dbr)
 
             # Schedule DBR at the new orchestration address
-            url = f"localhost:{ORCHESTRATION_PORT}"
+            url = f"{LOCAL_HOSTNAME}:{ORCHESTRATION_PORT}"
             
             if url in self.connection_cache:
                 channel = self.connection_cache[url]
@@ -136,9 +136,9 @@ class Executor:
             response = stub.Schedule(new_proto_dbr)
             print(response)
 
-            # TODO: SEND DATA BACK TO CLIENT WITH MOCK INFO, WHICH ENABLES EFFECTIVE LOGGING
             data = {"id": dbr.id, "local_region": LOCAL_REGION, "functions_remaining": len(dbr.logic_functions)}
-            res = requests.post(f"http://{dbr.client_location}:{INITIALIZATION_PORT}/dump", json=data)
+            base_url = dbr.client_location if dbr.client_location != LOCAL_HOSTNAME else LOCAL_HOSTNAME
+            res = requests.post(f"http://{base_url}:{INITIALIZATION_PORT}/dump", json=data)
             print("DUMP RES", res)
             return
         

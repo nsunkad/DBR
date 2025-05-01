@@ -46,9 +46,15 @@ class TransformFunction(Function):
     f: str
     function_type: FunctionType = FunctionType.TRANSFORM
 
+    def __init__(self, f):
+        super().__init__(f=f, function_type=FunctionType.TRANSFORM)
+
 class ExecuteFunction(Function):
     f: str
     function_type: FunctionType = FunctionType.EXECUTE
+
+    def __init__(self, f):
+        super().__init__(f=f, function_type=FunctionType.EXECUTE)
 
 
 class DBR(BaseModel):

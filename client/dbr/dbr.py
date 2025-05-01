@@ -1,6 +1,7 @@
 import base64
 import pickle
 import requests
+from requests.adapters import HTTPAdapter
 from uuid import uuid4, UUID
 from typing import Callable, Dict, Optional, List
 from pydantic import BaseModel, Field, field_serializer
@@ -44,14 +45,15 @@ class DBR(BaseModel):
         self.status = DBRStatus.DBR_RUNNING
         data = self.model_dump_json(exclude_none=True)  # or use .json() if preferred
         print(data)
-        response = requests.post(f"{server_url}/execute", json=data)
-        print(response)
+        adapter = HTTPAdapter(max_retries=1)
+        
+        session = requests.Session()
+        session.mount('http://', adapter)
+        response = session.post(f"{server_url}/execute", json=data)
 
-        return
         id = str(self.id)
         while True:
-            print(server_url)
-            response = requests.get(f"{server_url}/check?id={id}")
+            response = session.get(f"{server_url}/check?id={id}")
             if response.status_code == 200:
                 data = response.json()
                 status = data["status"]

@@ -4,7 +4,7 @@ from dbr.query import GetQuery, SetQuery
 import time
 
 def new_dbr():
-    set_q = SetQuery(b"key3", b"val3")
+    set_q = SetQuery(b"key3", b"val3new")
     dbr = DBR()
     dbr.name = "TestDBR"
     dbr.add_query(set_q)
@@ -12,6 +12,10 @@ def new_dbr():
 
 def double(env):
     env |= {"new_val": env[b"key3"] + env[b"key3"]}
+    return env    
+
+def double_newval(env):
+    env |= {"new_val": env["new_val"] + env["new_val"]}
     return env    
 
 def change(env):
@@ -26,11 +30,12 @@ def run():
 
     server_url = f"http://{base_url}:{INITIALIZATION_PORT}"
 
-    get_q = GetQuery(b"key3")
+    get_q = SetQuery(b"key3", b"val3")
     dbr = DBR()
     dbr.name = "TestDBR"
     dbr.add_query(get_q)
-    dbr = dbr.then_transform(double).then_execute(new_dbr).then_transform(change)
+    # dbr = dbr.then_transform(double).then_execute(new_dbr).then_transform(change)A
+    dbr = dbr.then_transform(double).then_transform(double_newval).then_transform(change)
 
     start_time = time.time()
     env = dbr.execute(server_url)

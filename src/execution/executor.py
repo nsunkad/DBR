@@ -62,6 +62,20 @@ class Executor:
                 env[query.set_query.key] = query.set_query.value
                 
         print("NEW ENV POST QUERIES", env)
+
+        # Execute all the transform functions that are passed in, then re-schedule chained DBR
+        while dbr.logic_functions and dbr.logic_functions[0].WhichOneof('logic_function_type') == "transform_function":
+            logic_function = dbr.logic_functions[0]
+            
+            b = bytes.fromhex(logic_function.transform_function.f)
+            logic_function = dill.loads(b)
+            print("BEFORE ENV", env)
+            print(logic_function)
+            env = logic_function(env)
+            print("AFTER ENV", env)
+            dbr.logic_functions.pop(0)
+            
+
         # TODO: FIX THIS LOGIC TO WORK
         # if dbr.logic_functions:
         #     print("Executing logic function")

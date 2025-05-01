@@ -1,2 +1,21 @@
 hostname,region
-localhost, us-east-2
+sp25-cs525-0301.cs.illinois.edu,us-east-2
+sp25-cs525-0302.cs.illinois.edu,us-east-2
+sp25-cs525-0303.cs.illinois.edu,us-west-2
+sp25-cs525-0304.cs.illinois.edu,us-west-2
+sp25-cs525-0305.cs.illinois.edu,mx-central-1
+sp25-cs525-0306.cs.illinois.edu,mx-central-1
+sp25-cs525-0307.cs.illinois.edu,eu-south-1
+sp25-cs525-0308.cs.illinois.edu,eu-south-1
+sp25-cs525-0309.cs.illinois.edu,eu-central-2
+sp25-cs525-0310.cs.illinois.edu,eu-central-2
+sp25-cs525-0311.cs.illinois.edu,ca-central-1
+sp25-cs525-0312.cs.illinois.edu,ca-central-1
+sp25-cs525-0313.cs.illinois.edu,ap-southeast-7
+sp25-cs525-0314.cs.illinois.edu,ap-southeast-7
+sp25-cs525-0315.cs.illinois.edu,ap-south-1
+sp25-cs525-0316.cs.illinois.edu,ap-south-1
+sp25-cs525-0317.cs.illinois.edu,ap-east-1
+sp25-cs525-0318.cs.illinois.edu,ap-east-1
+sp25-cs525-0319.cs.illinois.edu,af-south-1
+sp25-cs525-0320.cs.illinois.edu,af-south-1

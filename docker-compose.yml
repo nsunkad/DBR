@@ -1,5 +1,6 @@
 services:
   simulator:
+    platform: linux/amd64
     image: aydanpirani/dbr-simulator:latest
     ports:
       - "50051:50051"
@@ -9,4 +10,6 @@ services:
     restart: unless-stopped
     environment:
       ROOT_DIR: /root
-    hostname: ${HOSTNAME}
+    deploy:
+      mode: global
+    hostname: "{{.Node.Hostname}}"

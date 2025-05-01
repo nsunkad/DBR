@@ -1,37 +1,54 @@
 from dbr.dbr import DBR
 from enums import Placement
-from query.get_query import GetQuery
-from query.set_query import SetQuery
+from dbr.query import GetQuery, SetQuery
 import time
 
-def set(env):
-    set_q = SetQuery(b"key3", b"val3")
+def new_dbr():
+    set_q = SetQuery(b"key3", b"val3new")
     dbr = DBR()
     dbr.name = "TestDBR"
-    dbr.placement = Placement.DEFAULT
     dbr.add_query(set_q)
-    env |= dbr.execute_inner()
-    return env
+    return dbr
 
 def double(env):
     env |= {"new_val": env[b"key3"] + env[b"key3"]}
+    return env    
+
+def double_newval(env):
+    env |= {"new_val": env["new_val"] + env["new_val"]}
     return env    
 
 def change(env):
     env |= {"new_val": env["new_val"] + b"hithere!"}
     return env
 
+def set_val(env):
+    key = bytes(env["new_val"])
+    set_q = SetQuery(key, b"chained_key")
+    dbr = DBR()
+    dbr.add_query(set_q)
+    return dbr
+
+def get_val(env):
+    key = bytes(env["new_val"])
+    get_q = GetQuery(key)
+    dbr = DBR()
+    dbr.add_query(get_q)
+    return dbr
+
 def run():
     INITIALIZATION_PORT = "50054"
-    # server_url = f"http://apirani2@sp25-cs525-0301.cs.illinois.edu:{INITIALIZATION_PORT}"
-    server_url = f"http://localhost:{INITIALIZATION_PORT}"
 
-    get_q = GetQuery(b"key3")
+    base_url = "localhost"
+    # base_url = "apirani2@sp25-cs525-0301.cs.illinois.edu"
+
+    server_url = f"http://{base_url}:{INITIALIZATION_PORT}"
+
+    get_q = SetQuery(b"key3", b"val3")
     dbr = DBR()
     dbr.name = "TestDBR"
-    dbr.placement = Placement.DEFAULT
     dbr.add_query(get_q)
-    dbr = dbr.then(set).then(double).then(change)
+    dbr = dbr.then_transform(double).then_transform(double_newval).then_transform(change).then_execute(set_val)
 
     start_time = time.time()
     env = dbr.execute(server_url)

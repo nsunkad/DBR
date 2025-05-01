@@ -4,15 +4,16 @@ import asyncio
 import dill
 import grpc
 import requests
-from constants import DATABASE_PORT, INITIALIZATION_PORT, LOCAL_HOSTNAME, ORCHESTRATION_PORT
+from constants import DATABASE_PORT, INITIALIZATION_PORT, LOCAL_HOSTNAME, LOCAL_REGION, ORCHESTRATION_PORT
 from database_pb2 import GetRequest, SetRequest
 from database_pb2_grpc import DatabaseStub
 from dbr_pb2 import EnvEntry
 import dbr_pb2_grpc
 import pickle
+from utils import convert_dbr_to_proto
 
 from enums import DBRStatus, Placement
-from orchestration.types import DBR, GetQuery, SetQuery
+from custom_types import DBR, DBREnvironment, ExecuteFunction, GetQuery, SetQuery, TransformFunction
 
 class Executor:
     connection_cache = {}
@@ -29,9 +30,7 @@ class Executor:
             print("Executor waiting for DBR")
             dbr = await self.queue.get()
             print("Executor received DBR, now placing in thread", dbr)
-            # await asyncio.to_thread(self.execute_dbr, dbr)
             asyncio.create_task(self.execute_dbr(dbr))
-            # await self.execute_dbr(dbr)
 
     def execute_query(self, query):
         query_type = query.WhichOneof('query_type')
@@ -50,35 +49,81 @@ class Executor:
             loop.run_in_executor(None, self.execute_query, query) for query in dbr.queries
         ])
 
-        env = {self.get_query_key(query): result for query, result in zip(dbr.queries, query_results)}
-        
-        for entry in dbr.environment.environment:
-            key = entry.key
-            value = entry.value
-            env[key] = value
+        env = {e.key: e.value for e in dbr.environment.environment}
 
-        if dbr.logic_functions:
-            print("Executing logic function")
-            b = bytes.fromhex(dbr.logic_functions[0])
-            logic_function = dill.loads(b)
-            print("BEFORE ENV", env)
+        for query, result in zip(dbr.queries, query_results):
+            if result is None:
+                self.handle_failure(dbr.client_location, dbr.id)
+                return
+                
+            if query.WhichOneof('query_type') == "get_query":
+                env[query.get_query.key] = result.value
+            
+            if query.WhichOneof('query_type') == "set_query":
+                env[query.set_query.key] = query.set_query.value
+                
+        print("ENV POST QUERIES", env)
 
-            print(logic_function)
-            logic_function.__globals__['GetQuery'] = GetQuery
-            logic_function.__globals__['SetQuery'] = SetQuery
-            logic_function.__globals__['DBR'] = DBR
-            logic_function.__globals__['Placement'] = Placement
-
-            env = logic_function(env)  # Use the deserialized function here
-            print("AFTER ENV", env)
+        # Execute all the transform functions that are passed in, then re-schedule chained DBR
+        print("ENV BEFORE TRANSFORM FUNCTIONS", env)
+        while dbr.logic_functions and dbr.logic_functions[0].WhichOneof('logic_function_type') == "transform_function":
+            logic_function = dbr.logic_functions[0]
             dbr.logic_functions.pop(0)
-            for key, value in env.items():
-                dbr.environment.environment.append(EnvEntry(key=key, value=value))
-        
-        print("Results: ", env)
-        # TODO: Send results back to client/next layer
+            
+            b = bytes.fromhex(logic_function.transform_function.f)
+            logic_function = dill.loads(b)
+            print(logic_function)
+            env = logic_function(env)
+        print("ENV AFTER TRANSFORM FUNCTIONS", env)
+            
+        # Contains a chained DBR, execute it
         if dbr.logic_functions:
-            print("more logic functions remain")
+            logic_function = dbr.logic_functions[0]
+            dbr.logic_functions.pop(0)
+
+            b = bytes.fromhex(logic_function.execute_function.f)
+            f = dill.loads(b)
+            print("EXECUTE FUNCTION", f)
+
+            f.__globals__['GetQuery'] = GetQuery
+            f.__globals__['SetQuery'] = SetQuery
+            f.__globals__['DBR'] = DBR
+            f.__globals__['Placement'] = Placement
+
+            new_dbr: DBR = f(env)
+            print(new_dbr)
+            
+            new_dbr.id = dbr.id
+            new_dbr.name = dbr.name
+            new_dbr.predecessor_location = LOCAL_REGION
+            new_dbr.client_location = dbr.client_location
+
+            if dbr.placement == Placement.DEFAULT.value:
+                new_dbr.placement = Placement.DEFAULT
+            if dbr.placement == Placement.SMART.value:
+                new_dbr.placement = Placement.SMART
+            if dbr.placement == Placement.BRUTE.value:
+                new_dbr.placement = Placement.BRUTE
+
+
+            new_dbr.environment = DBREnvironment()
+            for key, value in env.items():
+                new_dbr.environment.env[key] = value
+
+            for logic_function in dbr.logic_functions:
+                if logic_function.WhichOneof('logic_function_type') == "transform_function":
+                    f = TransformFunction(f=logic_function.transform_function.f)
+                    new_dbr.logic_functions.append(logic_function)
+                    continue
+                
+                if logic_function.WhichOneof('logic_function_type') == "execute_function":
+                    f = ExecuteFunction(f=logic_function.execute_function.f)
+                    new_dbr.logic_functions.append(logic_function)
+
+            print(new_dbr)
+            new_proto_dbr = convert_dbr_to_proto(new_dbr)
+
+            # Schedule DBR at the new orchestration address
             url = f"localhost:{ORCHESTRATION_PORT}"
             
             if url in self.connection_cache:
@@ -88,12 +133,15 @@ class Executor:
                 self.connection_cache[url] = channel
 
             stub = dbr_pb2_grpc.DBReqServiceStub(channel)
-            response = stub.Schedule(dbr)
+            response = stub.Schedule(new_proto_dbr)
             print(response)
+
+            # TODO: SEND DATA BACK TO CLIENT WITH MOCK INFO, WHICH ENABLES EFFECTIVE LOGGING
+            data = {"id": dbr.id, "local_region": LOCAL_REGION, "functions_remaining": len(dbr.logic_functions)}
+            print(data)
             return
         
         print("DBR execution complete")
-        print("TODO: Send results back to client", dbr.client_location)
         
         url = f"http://{dbr.client_location}:{INITIALIZATION_PORT}/set_dbr_status"
         body = {
@@ -101,12 +149,24 @@ class Executor:
             "status": DBRStatus.DBR_SUCCESS,
             "env": base64.b64encode(pickle.dumps(env)).decode('utf-8'),
         }
-        print("DATA", url, body)
 
         response = requests.post(url, json=json.dumps(body))
         print(response)
         return
-        
+    
+    def handle_failure(target, id):
+        print("DBR execution failed")
+
+        url = f"http://{target}:{INITIALIZATION_PORT}/set_dbr_status"
+        body = {
+            "id": id,
+            "status": DBRStatus.DBR_FAILED,
+            "env": {},
+        }
+        print("DATA", url, body)
+        response = requests.post(url, json=json.dumps(body))
+        print(response)
+        return
             
 
     def get_query_key(self, query):
@@ -122,11 +182,13 @@ class Executor:
 
     def execute_get(self, get_query):
         request = GetRequest(key=get_query.key)
+        print("EXECUTING GET", request)
         response = self.database.Get(request)
         return response.value
 
     def execute_set(self, set_query):
         request = SetRequest(key=set_query.key, value=set_query.value)
+        print("EXECUTING SET", request)
         response = self.database.Set(request)
         return response.success
         

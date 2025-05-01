@@ -60,6 +60,21 @@ enum Placement {
     BRUTE = 2;
 }
 
+message TransformFunction {
+    string f = 1;
+}
+
+message ExecuteFunction {
+    string f = 1;
+}
+
+message LogicFunction {
+   oneof logic_function_type {
+      TransformFunction transform_function = 1;
+      ExecuteFunction execute_function = 2;
+   } 
+}
+
 message DBReq {
     string id = 1;
     string name = 2;
@@ -68,6 +83,6 @@ message DBReq {
     string predecessor_location = 5;
     DBREnvironment environment = 7;
     string client_location = 9;
-    repeated string logic_functions = 8;
+    repeated LogicFunction logic_functions = 8;
     Placement placement = 10;
 }

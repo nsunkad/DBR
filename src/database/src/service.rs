@@ -104,6 +104,7 @@ impl Database for DB {
             self.vms[((hash_value + 3*OFFSET) % NUM_INSTANCES) as usize].clone(),
         ];
 
+        println!("Read regions: {:?}", regions);
         Ok(Response::new(ReadRegionReply { regions }))
     }
 
@@ -116,6 +117,7 @@ impl Database for DB {
         let hash_value = hasher.finish();
 
         let region = self.vms[(hash_value % NUM_INSTANCES) as usize].clone();
+        println!("Write region: {}", region);
 
         Ok(Response::new(WriteRegionReply { region }))        
     }

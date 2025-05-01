@@ -113,12 +113,12 @@ class Executor:
             for logic_function in dbr.logic_functions:
                 if logic_function.WhichOneof('logic_function_type') == "transform_function":
                     f = TransformFunction(f=logic_function.transform_function.f)
-                    new_dbr.logic_functions.append(logic_function)
+                    new_dbr.logic_functions.append(f)
                     continue
                 
                 if logic_function.WhichOneof('logic_function_type') == "execute_function":
                     f = ExecuteFunction(f=logic_function.execute_function.f)
-                    new_dbr.logic_functions.append(logic_function)
+                    new_dbr.logic_functions.append(f)
 
             print(new_dbr)
             new_proto_dbr = convert_dbr_to_proto(new_dbr)

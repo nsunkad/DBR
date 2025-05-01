@@ -82,6 +82,17 @@ def dump():
 
     return jsonify({"success": True})
 
+@app.route('/read-dump', methods=['GET'])
+def status():
+    dbr_id = request.args.get("id")
+    if not dbr_id:
+        return jsonify({"error": "No id provided"}), 400
+    
+    with open(f"{ROOT_DIR}/dumps/{dbr_id}.dump", "r") as f:
+        data = f.read()
+
+    return jsonify({"data": data}), 200
+
 @app.route('/all-status', methods=['GET'])
 def all_status():
     return jsonify(dbr_statuses), 200

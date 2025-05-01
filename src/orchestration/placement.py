@@ -92,7 +92,7 @@ def get_shard_hostnames(queries):
     for query in queries: 
         hosts = query_to_hostnames(query)
         hostnames.update(hosts)
-    print("hostnames: ", hostnames)
+    print("ALL QUERY hostnames: ", hostnames)
     return hostnames
 
 def query_to_hostnames(query):
@@ -101,11 +101,14 @@ def query_to_hostnames(query):
     if query_type == "get_query":
         request = database_pb2.RegionRequest(key=query.get_query.key)
         response = DB_STUB.GetReadRegions(request)
+        print("OUT QUERY TO LOCATION", response.regions)
         return response.regions
     
     if query_type == "set_query":
         request = database_pb2.RegionRequest(key=query.set_query.key)
         response = DB_STUB.GetWriteRegion(request)
+        print("OUT QUERY TO LOCATION", [response.region])
         return [response.region]
+
     
     raise ValueError("Unsupported query type")

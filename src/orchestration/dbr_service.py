@@ -53,7 +53,6 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
             return self._forward_dbr(dbreq, url)
 
         selected_hostname = random.choice(hostnames)
-        selected_hostname = "localhost"
 
         url = f"{selected_hostname}:{EXECUTION_PORT}"
         self._forward_dbr(dbreq, url)

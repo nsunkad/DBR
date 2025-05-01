@@ -56,6 +56,7 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
 
         url = f"{selected_hostname}:{EXECUTION_PORT}"
         self._forward_dbr(dbreq, url)
+        return
 
     def _forward_dbr(self, dbr, url):
         if url not in self.connection_cache:

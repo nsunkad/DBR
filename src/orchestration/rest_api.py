@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from flask import Flask, request, jsonify
 from enums import DBRStatus
 from orchestration.dbr_service import dbr_servicer
@@ -9,11 +10,12 @@ app = Flask(__name__)
 dbr_statuses = {}
 
 
+file_dumps = {}
+
 @app.route('/execute', methods=['POST'])
 def execute_dbr():
-    print("IN")
     req_data = json.loads(request.get_json())
-    print("AFTER")
+    recv_time = datetime.now()
     try:
         print(req_data)
         in_dbr = DBR.model_validate(req_data)
@@ -23,6 +25,7 @@ def execute_dbr():
     except Exception as e:
         print(e)
         return jsonify({"success": False, "error": str(e)}), 400
+    
 
     print("PRE-SCHEDULE")
     response = dbr_servicer.Schedule(proto_dbr, None)
@@ -31,6 +34,8 @@ def execute_dbr():
     if db_id := req_data.get('id'):
         print(db_id)
         dbr_statuses[db_id] = {"status": DBRStatus.DBR_RUNNING, "env": None}
+        file_dumps[db_id] = open(f"{db_id}.dump", "a")
+        file_dumps[db_id].write(f"INIT {recv_time}\n")
     
     return jsonify({"success": response.success})
 
@@ -58,6 +63,20 @@ def check_dbr_status():
     else:
         return jsonify({"error": "No such DBR"}), 404
     
+@app.route('dump', methods=['POST'])
+def dump():
+    data = request.get_json()
+    dbr_id = data.get("id")
+    recv_time = datetime.now()
+    
+    if not dbr_id:
+        return jsonify({"error": "No id provided"}), 400
+    
+    cleaned_data = ",".join(f"{key};{value}" for key, value in data.items() if key != "id")
+    file_dumps[dbr_id].write(f"DUMP {recv_time} {cleaned_data}\n")
+    
+    return jsonify({"success": True})
+
 @app.route('/all-status', methods=['GET'])
 def all_status():
     return jsonify(dbr_statuses), 200

@@ -138,7 +138,8 @@ class Executor:
 
             # TODO: SEND DATA BACK TO CLIENT WITH MOCK INFO, WHICH ENABLES EFFECTIVE LOGGING
             data = {"id": dbr.id, "local_region": LOCAL_REGION, "functions_remaining": len(dbr.logic_functions)}
-            print(data)
+            res = requests.post(f"http://{dbr.client_location}:{INITIALIZATION_PORT}/dump", json=data)
+            print("DUMP RES", res)
             return
         
         print("DBR execution complete")

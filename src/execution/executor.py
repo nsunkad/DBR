@@ -57,7 +57,7 @@ class Executor:
                 return
                 
             if query.WhichOneof('query_type') == "get_query":
-                env[query.get_query.key] = result.value
+                env[query.get_query.key] = result
             
             if query.WhichOneof('query_type') == "set_query":
                 env[query.set_query.key] = query.set_query.value

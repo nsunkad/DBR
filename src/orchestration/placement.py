@@ -52,7 +52,7 @@ def placeDBR(dbr, place: Placement):
     shard_locations = set()
 
     for hostname in shard_hostnames:
-        shard_locations.update(HOSTNAME_REGION_MAPPINGS[hostname])
+        shard_locations.add(HOSTNAME_REGION_MAPPINGS[hostname])
     
     assert len(shard_hostnames) > 0
     assert len(shard_locations) > 0

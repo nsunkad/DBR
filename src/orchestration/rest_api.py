@@ -1,7 +1,9 @@
+import os
 import json
 from datetime import datetime
 from flask import Flask, request, jsonify
 from enums import DBRStatus
+from constants import LOCAL_HOSTNAME
 from orchestration.dbr_service import dbr_servicer
 from custom_types import DBR
 from utils import convert_dbr_to_proto
@@ -9,8 +11,9 @@ from utils import convert_dbr_to_proto
 app = Flask(__name__)
 dbr_statuses = {}
 
+ROOT_DIR = os.environ.get("ROOT_DIR", None)
+os.mkdir(os.path.join(ROOT_DIR, "dumps"))
 
-file_dumps = {}
 
 @app.route('/execute', methods=['POST'])
 def execute_dbr():
@@ -26,7 +29,6 @@ def execute_dbr():
         print(e)
         return jsonify({"success": False, "error": str(e)}), 400
     
-
     print("PRE-SCHEDULE")
     response = dbr_servicer.Schedule(proto_dbr, None)
     print("POST-SCHEDULE")
@@ -34,8 +36,10 @@ def execute_dbr():
     if db_id := req_data.get('id'):
         print(db_id)
         dbr_statuses[db_id] = {"status": DBRStatus.DBR_RUNNING, "env": None}
-        file_dumps[db_id] = open(f"{db_id}.dump", "a")
-        file_dumps[db_id].write(f"INIT {recv_time}\n")
+        with open(f"{ROOT_DIR}/dumps/{db_id}.dump", "w") as f:
+            f.write("")
+        with open(f"{ROOT_DIR}/dumps/{db_id}.dump", "a") as f:
+            f.write(f"INIT {recv_time}\n")
     
     return jsonify({"success": response.success})
 
@@ -73,7 +77,8 @@ def dump():
         return jsonify({"error": "No id provided"}), 400
     
     cleaned_data = ",".join(f"{key};{value}" for key, value in data.items() if key != "id")
-    file_dumps[dbr_id].write(f"DUMP {recv_time} {cleaned_data}\n")
+    with open(f"{ROOT_DIR}/dumps/{dbr_id}.dump", "a") as f: 
+        f.write(f"DUMP {recv_time} {cleaned_data}\n")
 
     return jsonify({"success": True})
 

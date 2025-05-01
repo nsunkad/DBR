@@ -1,17 +1,14 @@
 from dbr.dbr import DBR
 from enums import Placement
-from query.get_query import GetQuery
-from query.set_query import SetQuery
+from dbr.query import GetQuery, SetQuery
 import time
 
-def set(env):
+def new_dbr():
     set_q = SetQuery(b"key3", b"val3")
     dbr = DBR()
     dbr.name = "TestDBR"
-    dbr.placement = Placement.DEFAULT
     dbr.add_query(set_q)
-    env |= dbr.execute_inner()
-    return env
+    return dbr
 
 def double(env):
     env |= {"new_val": env[b"key3"] + env[b"key3"]}
@@ -23,15 +20,17 @@ def change(env):
 
 def run():
     INITIALIZATION_PORT = "50054"
-    # server_url = f"http://apirani2@sp25-cs525-0301.cs.illinois.edu:{INITIALIZATION_PORT}"
-    server_url = f"http://localhost:{INITIALIZATION_PORT}"
+
+    base_url = "localhost"
+    # base_url = "apirani2@sp25-cs525-0301.cs.illinois.edu"
+
+    server_url = f"http://{base_url}:{INITIALIZATION_PORT}"
 
     get_q = GetQuery(b"key3")
     dbr = DBR()
     dbr.name = "TestDBR"
-    dbr.placement = Placement.DEFAULT
     dbr.add_query(get_q)
-    dbr = dbr.then(set).then(double).then(change)
+    dbr = dbr.then_transform(double).then_execute(new_dbr).then_transform(change)
 
     start_time = time.time()
     env = dbr.execute(server_url)

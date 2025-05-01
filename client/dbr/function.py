@@ -8,7 +8,7 @@ class Function(BaseModel):
     function_type: FunctionType
     
     @field_serializer("f")
-    def serialize_logic_function(self, f: Callable) -> List[str]:
+    def serialize_logic_function(self, f: Callable) -> str:
         f.__module__ = '__main__'
         dump = dill.dumps(f).hex()
         return dump

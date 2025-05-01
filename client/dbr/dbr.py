@@ -2,7 +2,7 @@ import base64
 import pickle
 import requests
 from uuid import uuid4, UUID
-from typing import Dict, Optional, List
+from typing import Callable, Dict, Optional, List
 from pydantic import BaseModel, Field, field_serializer
 from dbr.query import BaseQuery, GetQuery, SetQuery
 from dbr.function import Function, TransformFunction, ExecuteFunction
@@ -36,10 +36,6 @@ class DBR(BaseModel):
         Removes a query from the DBR.
         """
         self.queries.pop(query.id, None)
-
-    def execute_inner(self):
-        env = self.execute("localhost")
-        return env
 
     def execute(self, server_url: str):
         """

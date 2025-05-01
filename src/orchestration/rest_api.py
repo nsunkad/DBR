@@ -1,7 +1,7 @@
 import base64
 import json
 from flask import Flask, request, jsonify
-from enums import DBRStatus, QueryType
+from enums import DBRStatus, QueryType, FunctionType
 from generated import dbr_pb2
 from orchestration.dbr_service import dbr_servicer
 from orchestration.types import DBR
@@ -26,12 +26,18 @@ def convert_dbr_to_proto(dbr):
     
     print("LOGIC FUNCTIONS")
     for logic_function in dbr.logic_functions:
-        print("LOGIC_FN", logic_function)
-        proto_dbr.logic_functions.append(logic_function)
-        print("done")
-    # print("post")
-    # print(proto_dbr.logic_functions)
+        if logic_function.function_type == FunctionType.TRANSFORM:
+            proto_function = dbr_pb2.TransformFunction(f=logic_function.f)
+            proto_dbr.logic_functions.append(dbr_pb2.LogicFunction(transform_function=proto_function))
+            continue
+        
+        if logic_function.function_type == FunctionType.EXECUTE:
+            proto_function = dbr_pb2.ExecuteFunction(f=logic_function.f)
+            proto_dbr.logic_functions.append(dbr_pb2.LogicFunction(execute_function=proto_function))
+            continue
 
+        raise ValueError("Unsupported function type")
+        
     print("env")
     for key, value in dbr.environment.env.items():
         proto_dbr.environment.environment.append(dbr_pb2.EnvEntry(key=key, value=value))

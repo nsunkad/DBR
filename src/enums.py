@@ -39,3 +39,7 @@ class QueryStatus(IntEnum):
     QUERY_RUNNING = 2
     QUERY_SUCCESS = 3
     QUERY_FAILED = 4
+
+class FunctionType(IntEnum):
+    TRANSFORM = 1
+    EXECUTE = 2

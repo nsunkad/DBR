@@ -20,8 +20,8 @@ echo "Latency configuration applied. Container will now remain running."
 
 
 cd $ROOT_DIR/src/database && cargo run $ROOT_DIR/config/vms.dat&
-python u -m execution.service &
-python u -m orchestration.service &
+python -u -m execution.service &
+python -u -m orchestration.service &
 echo "Execution and orchestration servers started. Container will now remain running."
 
 # # Keep the container alive indefinitely

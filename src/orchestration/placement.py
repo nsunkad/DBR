@@ -97,7 +97,7 @@ def get_shard_locations(queries):
 
 def query_to_location(query):
     # TODO: DEBUG
-    return [LOCAL_REGION]
+    # return [LOCAL_REGION]
 
     print("IN QUERY TO LOCATION")
     query_type = query.WhichOneof('query_type')

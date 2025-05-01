@@ -3,8 +3,11 @@ import grpc
 from constants import (
     DATABASE_PORT,
     LOCAL_HOSTNAME,
+    HOSTNAME_REGION_MAPPINGS,
+    REGION_HOSTNAME_MAPPINGS,
     REGION_LATENCIES,
-    HOSTNAME_REGION_MAPPINGS
+    HOSTNAME_REGION_MAPPINGS,
+    LOCAL_REGION
 )
 
 from generated import database_pb2, database_pb2_grpc
@@ -14,9 +17,8 @@ DB_CHANNEL = grpc.insecure_channel(db_url)
 DB_STUB = database_pb2_grpc.DatabaseStub(DB_CHANNEL)
 
 def get_candidate_locations(placement_mode: Placement, dbr, shard_locations):
-    local_region = HOSTNAME_REGION_MAPPINGS[LOCAL_HOSTNAME]
-    print(local_region, dbr.predecessor_location)
-    previous_location = dbr.predecessor_location or local_region
+    print("IN", LOCAL_REGION, dbr.predecessor_location)
+    previous_location = dbr.predecessor_location or LOCAL_REGION
     
     candidate_locations = set([previous_location])
     
@@ -36,7 +38,7 @@ def get_candidate_locations(placement_mode: Placement, dbr, shard_locations):
         print("brute placement")
         # TODO: compares each possible reigion latency to access locs
         # vectorization for speed up?
-        candidate_locations = set(HOSTNAME_REGION_MAPPINGS.values())
+        candidate_locations = set(REGION_HOSTNAME_MAPPINGS.keys())
 
     print("candidate locations: ", candidate_locations)
     assert len(candidate_locations) > 0
@@ -46,12 +48,17 @@ def get_candidate_locations(placement_mode: Placement, dbr, shard_locations):
 
 # TEST: with read replicas after csv filled in
 def placeDBR(dbr, place: Placement):
-    shard_hostnames = get_shard_hostnames(dbr.queries)
-    print("shard hostnames: ", shard_hostnames)
-    shard_locations = set((HOSTNAME_REGION_MAPPINGS[host] for host in shard_hostnames if host in HOSTNAME_REGION_MAPPINGS))
+    shard_locations = get_shard_locations(dbr.queries)
+    shard_hostnames = set()
+
+    for location in shard_locations:
+        shard_hostnames.update(REGION_HOSTNAME_MAPPINGS[location])
+    
     assert len(shard_locations) > 0
+    assert len(shard_hostnames) > 0
 
     print("shard locations: ", shard_locations)
+    print("shard hostnames: ", shard_hostnames)
 
     candidate_locations, previous_location = get_candidate_locations(place, dbr, shard_locations)
     print("candidate locations: ", candidate_locations)
@@ -79,7 +86,7 @@ def placeDBR(dbr, place: Placement):
     return best_locations
 
 # Returns all UNIQUE locations for queries of a DBR
-def get_shard_hostnames(queries): 
+def get_shard_locations(queries): 
     print("getting locations", queries)
     locations = set()
     for query in queries: 
@@ -89,6 +96,9 @@ def get_shard_hostnames(queries):
     return locations
 
 def query_to_location(query):
+    # TODO: DEBUG
+    return [LOCAL_REGION]
+
     print("IN QUERY TO LOCATION")
     query_type = query.WhichOneof('query_type')
     if query_type == "get_query":

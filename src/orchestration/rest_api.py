@@ -76,7 +76,7 @@ def dump():
     if not dbr_id:
         return jsonify({"error": "No id provided"}), 400
     
-    cleaned_data = ",".join(f"{key};{value}" for key, value in data.items() if key != "id")
+    cleaned_data = " ".join(f"{key}:{value}" for key, value in data.items() if key != "id")
     with open(f"{ROOT_DIR}/dumps/{dbr_id}.dump", "a") as f: 
         f.write(f"DUMP {recv_time} {cleaned_data}\n")
 

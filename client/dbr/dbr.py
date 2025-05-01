@@ -50,9 +50,11 @@ class DBR(BaseModel):
         session = requests.Session()
         session.mount('http://', adapter)
         response = session.post(f"{server_url}/execute", json=data)
-
+        print(response)
         id = str(self.id)
-        while True:
+
+        attempts = 0
+        while attempts < 1000:
             response = session.get(f"{server_url}/check?id={id}")
             if response.status_code == 200:
                 data = response.json()
@@ -66,6 +68,10 @@ class DBR(BaseModel):
                 if status == DBRStatus.DBR_FAILED:
                     print("FAILED")
                     break
+
+            attempts += 1
+        print("FAILED")
+        return {}
 
     def transform(self, logic_function: Callable[[DBREnvironment], DBREnvironment]):
         self.logic_functions.append(TransformFunction(f=logic_function))

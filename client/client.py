@@ -2,6 +2,7 @@ from dbr.dbr import DBR
 from enums import Placement
 from dbr.query import GetQuery, SetQuery
 import time
+import requests
 
 def new_dbr():
     set_q = SetQuery(b"key3", b"val3new")
@@ -39,22 +40,26 @@ def get_val(env):
 def run():
     INITIALIZATION_PORT = "50054"
 
-    base_url = "localhost"
-    # base_url = "apirani2@sp25-cs525-0301.cs.illinois.edu"
+    # base_url = "localhost"
+    base_url = "apirani2@sp25-cs525-0301.cs.illinois.edu"
 
     server_url = f"http://{base_url}:{INITIALIZATION_PORT}"
 
     get_q = SetQuery(b"key3", b"val3")
     dbr = DBR()
     dbr.name = "TestDBR"
+    dbr.placement = Placement.SMART
     dbr.add_query(get_q)
-    dbr = dbr.then_transform(double).then_transform(double_newval).then_transform(change).then_execute(set_val)
+    dbr = dbr.then_transform(double).then_transform(double_newval).then_execute(set_val).then_execute(get_val)
 
     start_time = time.time()
     env = dbr.execute(server_url)
     end_time = time.time()
     print(f"Execution time: {end_time - start_time} seconds")   
     print(env)
+
+    logs = requests.get(f"{server_url}/read-dump?id={dbr.id}").json()["data"]
+    print(logs)
 
 
 if __name__ == '__main__':

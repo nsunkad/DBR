@@ -1,15 +1,15 @@
 services:
   simulator:
-    platform: linux/amd64
-    image: aydanpirani/dbr-simulator:latest
+    build:
+      context: .
+      dockerfile: ./docker/Dockerfile
     ports:
       - "50051:50051"
       - "50052:50052"
       - "50053:50053"
       - "50054:50054"
+    container_name: dbr-simulator
     restart: unless-stopped
     environment:
       ROOT_DIR: /root
-    deploy:
-      mode: global
-    hostname: "{{.Node.Hostname}}"
+    hostname: ${HOSTNAME}

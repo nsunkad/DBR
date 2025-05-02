@@ -61,10 +61,10 @@ impl Database for DB {
             let read_regions_response = self.get_read_regions(Request::new(RegionRequest { key: key_clone.clone() })).await?;
             let replica_regions = read_regions_response.into_inner().regions;
 
-            for replica in replica_regions {            
+            for i in 1...replica_regions.len() {            
                 let key = key_clone.clone();
                 let value = value_clone.clone();
-                let replica_clone = replica.clone();
+                let replica_clone = replica_regions[i].clone();
 
                 tokio::spawn(async move {
                     match database::database_client::DatabaseClient::connect(replica_clone).await {
@@ -94,7 +94,7 @@ impl Database for DB {
         key.hash(&mut hasher);
         let hash_value = hasher.finish();
 
-        const OFFSET: u64 = NUM_INSTANCES / (REPLICATION_FACTOR+1);
+        const OFFSET: u64 = 1;
         
         // Get the three regions for the key
         let regions = vec![

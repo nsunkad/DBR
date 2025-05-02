@@ -61,7 +61,7 @@ impl Database for DB {
             let read_regions_response = self.get_read_regions(Request::new(RegionRequest { key: key_clone.clone() })).await?;
             let replica_regions = read_regions_response.into_inner().regions;
 
-            for i in 1...replica_regions.len() {            
+            for i in 1..replica_regions.len() {            
                 let key = key_clone.clone();
                 let value = value_clone.clone();
                 let replica_clone = replica_regions[i].clone();

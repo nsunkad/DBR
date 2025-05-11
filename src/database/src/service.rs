@@ -5,7 +5,7 @@ use std::hash::{DefaultHasher, Hash, Hasher};
 use std::sync::Arc;
 use crate::kv_store::InMemoryStore;
 use crate::types::Bytes;
-use crate::config::{NUM_INSTANCES, REPLICATION_FACTOR, PROPAGATE_WRITE};
+use crate::config::{NUM_INSTANCES};
 
 use database::database_server::{Database};
 use database::{

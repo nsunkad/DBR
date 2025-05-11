@@ -11,6 +11,7 @@ from dbr.dbr_environment import DBREnvironment
 from enums import DBRStatus, Placement, FunctionType
 from typing import Callable, Optional
 import dill
+import time
 
 
 
@@ -44,15 +45,14 @@ class DBR(BaseModel):
         """
         self.status = DBRStatus.DBR_RUNNING
         data = self.model_dump_json(exclude_none=True)  # or use .json() if preferred
-        print(data)
+        # print(data)
         adapter = HTTPAdapter(max_retries=1)
         
         session = requests.Session()
         session.mount('http://', adapter)
         response = session.post(f"{server_url}/execute", json=data)
-        print(response)
         id = str(self.id)
-
+        # res = requests.get(f"{server_url}/check?id={id}")
         attempts = 0
         while attempts < 1000:
             response = session.get(f"{server_url}/check?id={id}")
@@ -68,7 +68,6 @@ class DBR(BaseModel):
                 if status == DBRStatus.DBR_FAILED:
                     print("FAILED")
                     break
-
             attempts += 1
         print("FAILED")
         return {}

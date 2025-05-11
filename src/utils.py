@@ -59,7 +59,7 @@ def import_protobuf():
     def import_module(module_name, module_path, alias=""):
         spec = importlib.util.spec_from_file_location(module_name, module_path)
         if spec is None:
-            print(f"Error: Could not create module specification for {module_path}")
+            #print(f"Error: Could not create module specification for {module_path}")
             return None
 
         module = importlib.util.module_from_spec(spec)
@@ -69,9 +69,9 @@ def import_protobuf():
             spec.loader.exec_module(module)
             if alias:
                 sys.modules[alias] = module
-            print(f"Module {module_name} imported successfully.")
+            #print(f"Module {module_name} imported successfully.")
         except Exception as e:
-            print(f"Error: Failed to execute module {module_path}: {e}")
+            #print(f"Error: Failed to execute module {module_path}: {e}")
             del sys.modules[module_name]
             return None
 
@@ -87,7 +87,7 @@ def start_background_loop(loop):
 
 
 def convert_dbr_to_proto(dbr):
-    print("CONVERTING")
+    #print("CONVERTING")
     proto_dbr = dbr_pb2.DBReq()
     proto_dbr.id = str(dbr.id)
     proto_dbr.name = dbr.name
@@ -95,11 +95,11 @@ def convert_dbr_to_proto(dbr):
     proto_dbr.client_location = dbr.client_location
     proto_dbr.placement = dbr.placement.value
 
-    print("PREDECESSOR")
+    #print("PREDECESSOR")
     if dbr.predecessor_location is not None:
         proto_dbr.predecessor_location = dbr.predecessor_location
     
-    print("LOGIC FUNCTIONS")
+    #print("LOGIC FUNCTIONS")
     for logic_function in dbr.logic_functions:
         if logic_function.function_type == FunctionType.TRANSFORM:
             proto_function = dbr_pb2.TransformFunction(f=logic_function.f)
@@ -113,13 +113,13 @@ def convert_dbr_to_proto(dbr):
 
         raise ValueError("Unsupported function type")
         
-    print("env")
+    #print("env")
     for key, value in dbr.environment.env.items():
         proto_dbr.environment.environment.append(dbr_pb2.EnvEntry(key=key, value=value))
 
-    print("queries")
+    #print("queries")
     for query in dbr.queries.values():
-        print(query)
+        #print(query)
         if query.query_type == QueryType.GET:
             proto_query = dbr_pb2.GetQuery(id=str(query.id), key=query.key)
             proto_dbr.queries.append(dbr_pb2.Query(get_query=proto_query))
@@ -132,5 +132,5 @@ def convert_dbr_to_proto(dbr):
         
         raise ValueError("Unsupported query type")
 
-    print("PROTO DBR", proto_dbr)
+    #print("PROTO DBR", proto_dbr)
     return proto_dbr

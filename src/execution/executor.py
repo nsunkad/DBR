@@ -25,11 +25,11 @@ class Executor:
         self.queue = queue
 
     async def run(self):
-        print("Executor started")
+        #print("Executor started")
         while True:
-            print("Executor waiting for DBR")
+            #print("Executor waiting for DBR")
             dbr = await self.queue.get()
-            print("Executor received DBR, now placing in thread", dbr)
+            #print("Executor received DBR, now placing in thread", dbr)
             asyncio.create_task(self.execute_dbr(dbr))
 
     def execute_query(self, query):
@@ -43,7 +43,7 @@ class Executor:
         raise ValueError("Unsupported query type")    
     
     async def execute_dbr(self, dbr):
-        print("Executing DBR", dbr,)
+        #print("Executing DBR", dbr,)
         loop = asyncio.get_running_loop()
         query_results = await asyncio.gather(*[
             loop.run_in_executor(None, self.execute_query, query) for query in dbr.queries
@@ -62,19 +62,19 @@ class Executor:
             if query.WhichOneof('query_type') == "set_query":
                 env[query.set_query.key] = query.set_query.value
                 
-        print("ENV POST QUERIES", env)
+        #print("ENV POST QUERIES", env)
 
         # Execute all the transform functions that are passed in, then re-schedule chained DBR
-        print("ENV BEFORE TRANSFORM FUNCTIONS", env)
+        #print("ENV BEFORE TRANSFORM FUNCTIONS", env)
         while dbr.logic_functions and dbr.logic_functions[0].WhichOneof('logic_function_type') == "transform_function":
             logic_function = dbr.logic_functions[0]
             dbr.logic_functions.pop(0)
             
             b = bytes.fromhex(logic_function.transform_function.f)
             logic_function = dill.loads(b)
-            print(logic_function)
+            #print(logic_function)
             env = logic_function(env)
-        print("ENV AFTER TRANSFORM FUNCTIONS", env)
+        #print("ENV AFTER TRANSFORM FUNCTIONS", env)
             
         # Contains a chained DBR, execute it
         if dbr.logic_functions:
@@ -83,7 +83,7 @@ class Executor:
 
             b = bytes.fromhex(logic_function.execute_function.f)
             f = dill.loads(b)
-            print("EXECUTE FUNCTION", f)
+            #print("EXECUTE FUNCTION", f)
 
             f.__globals__['GetQuery'] = GetQuery
             f.__globals__['SetQuery'] = SetQuery
@@ -91,7 +91,7 @@ class Executor:
             f.__globals__['Placement'] = Placement
 
             new_dbr: DBR = f(env)
-            print(new_dbr)
+            #print(new_dbr)
             
             new_dbr.id = dbr.id
             new_dbr.name = dbr.name
@@ -120,7 +120,7 @@ class Executor:
                     f = ExecuteFunction(f=logic_function.execute_function.f)
                     new_dbr.logic_functions.append(f)
 
-            print(new_dbr)
+            #print(new_dbr)
             new_proto_dbr = convert_dbr_to_proto(new_dbr)
 
             # Schedule DBR at the new orchestration address
@@ -134,15 +134,15 @@ class Executor:
 
             stub = dbr_pb2_grpc.DBReqServiceStub(channel)
             response = stub.Schedule(new_proto_dbr)
-            print(response)
+            #print(response)
 
             data = {"id": dbr.id, "local_region": LOCAL_REGION, "functions_remaining": len(dbr.logic_functions)}
             base_url = dbr.client_location if dbr.client_location != LOCAL_HOSTNAME else LOCAL_HOSTNAME
             res = requests.post(f"http://{base_url}:{INITIALIZATION_PORT}/dump", json=data)
-            print("DUMP RES", res)
+            #print("DUMP RES", res)
             return
         
-        print("DBR execution complete")
+        #print("DBR execution complete")
         
         url = f"http://{dbr.client_location}:{INITIALIZATION_PORT}/set_dbr_status"
         body = {
@@ -152,11 +152,11 @@ class Executor:
         }
 
         response = requests.post(url, json=json.dumps(body))
-        print(response)
+        #print(response)
         return
     
     def handle_failure(target, id):
-        print("DBR execution failed")
+        #print("DBR execution failed")
 
         url = f"http://{target}:{INITIALIZATION_PORT}/set_dbr_status"
         body = {
@@ -164,9 +164,9 @@ class Executor:
             "status": DBRStatus.DBR_FAILED,
             "env": {},
         }
-        print("DATA", url, body)
+        #print("DATA", url, body)
         response = requests.post(url, json=json.dumps(body))
-        print(response)
+        #print(response)
         return
             
 
@@ -183,13 +183,13 @@ class Executor:
 
     def execute_get(self, get_query):
         request = GetRequest(key=get_query.key)
-        print("EXECUTING GET", request)
+        #print("EXECUTING GET", request)
         response = self.database.Get(request)
         return response.value
 
     def execute_set(self, set_query):
         request = SetRequest(key=set_query.key, value=set_query.value)
-        print("EXECUTING SET", request)
+        #print("EXECUTING SET", request)
         response = self.database.Set(request)
         return response.success
         

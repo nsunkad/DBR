@@ -7,7 +7,7 @@ from utils import load_latencies, load_hostname_regions
 
 ROOT_DIR = os.environ.get("ROOT_DIR", None)
 if ROOT_DIR is None:
-    print("Error: ROOT_DIR environment variable not set.")
+    #print("Error: ROOT_DIR environment variable not set.")
     sys.exit(1)
 
 LOGGER = Logger()

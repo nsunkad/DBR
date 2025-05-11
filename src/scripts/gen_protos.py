@@ -17,7 +17,7 @@ def gen_protos(root_dir):
     for out_dir in OUT_DIRS:
         # Create the output directory if it doesn't exist
         out_path = os.path.join(root_dir, out_dir)
-        print(f"Generating protos in {out_path}")
+        #print(f"Generating protos in {out_path}")
         os.makedirs(out_path, exist_ok=True)
 
         protoc_args = [
@@ -28,8 +28,8 @@ def gen_protos(root_dir):
             *proto_files,
         ]
     
-        print("Running protoc with the following arguments:")
-        print(" ".join(protoc_args))
+        #print("Running protoc with the following arguments:")
+        #print(" ".join(protoc_args))
         
         if protoc.main(protoc_args) != 0:
             sys.exit("Error: protoc command failed.")
@@ -38,6 +38,6 @@ def gen_protos(root_dir):
 if __name__ == "__main__":
     root_dir = os.environ.get("ROOT_DIR", None)
     if root_dir is None:
-        print("Error: ROOT_DIR environment variable not set.")
+        #print("Error: ROOT_DIR environment variable not set.")
         sys.exit(1)
     gen_protos(root_dir)

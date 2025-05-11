@@ -17,7 +17,7 @@ def serve():
     orchestration_address = f"0.0.0.0:{ORCHESTRATION_PORT}"
     server.add_insecure_port(orchestration_address)
     server.start()
-    print(f"Orchestration server started, listening on port {ORCHESTRATION_PORT}")
+    #print(f"Orchestration server started, listening on port {ORCHESTRATION_PORT}")
 
     # Block until server is terminated, graceful shutdown
     server.wait_for_termination()

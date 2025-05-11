@@ -7,10 +7,11 @@ from constants import LOCAL_HOSTNAME, LOCAL_REGION, REGION_LATENCIES, HOSTNAME_R
 
 def run_command(cmd):
     """Helper function to run a shell command and print it."""
-    print("Running:", cmd)
+    #print("Running:", cmd)
     result = subprocess.run(cmd, shell=True)
     if result.returncode != 0:
-        print(f"Command failed: {cmd}", file=sys.stderr)
+        #print(f"Command failed: {cmd}", file=sys.stderr)
+        pass
 
 def resolve_hostname(hostname):
     """Resolve a hostname to a list of IP addresses."""
@@ -19,7 +20,7 @@ def resolve_hostname(hostname):
         _, _, ipaddrlist = socket.gethostbyname_ex(hostname)
         return ipaddrlist
     except socket.gaierror as e:
-        print(f"Error resolving {hostname}: {e}", file=sys.stderr)
+        #print(f"Error resolving {hostname}: {e}", file=sys.stderr)
         return []
 
 def main():
@@ -48,14 +49,13 @@ def main():
         ips = resolve_hostname(hostname)
         if not ips:
             continue
-
         if region not in REGION_LATENCIES[LOCAL_REGION]:
-            print(f"Region '{region}' not found for local region '{LOCAL_REGION}' in latencies CSV", file=sys.stderr)
+            #print(f"Region '{region}' not found for local region '{LOCAL_REGION}' in latencies CSV", file=sys.stderr)
             continue
 
         delay = REGION_LATENCIES[LOCAL_REGION][region]
-        print(f"Configuring hostname '{hostname}' (region: {region}) with {delay}ms delay "
-              f"(from local region '{LOCAL_REGION}'). Resolved IPs: {ips}")
+        #print(f"Configuring hostname '{hostname}' (region: {region}) with {delay}ms delay "
+            #   f"(from local region '{LOCAL_REGION}'). Resolved IPs: {ips}")
 
         # Create a new HTB class for this hostname
         run_command(f"tc class add dev {args.interface} parent 1: classid 1:{counter} htb rate 100mbit")

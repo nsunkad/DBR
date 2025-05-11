@@ -20,21 +20,21 @@ def execute_dbr():
     req_data = json.loads(request.get_json())
     recv_time = datetime.now()
     try:
-        print(req_data)
+        #print(req_data)
         in_dbr = DBR.model_validate(req_data)
-        print("INIT DBR", in_dbr)
+        #print("INIT DBR", in_dbr)
         proto_dbr = convert_dbr_to_proto(in_dbr)
-        print("PROTO DBR", proto_dbr)
+        #print("PROTO DBR", proto_dbr)
     except Exception as e:
-        print(e)
+        #print(e)
         return jsonify({"success": False, "error": str(e)}), 400
     
-    print("PRE-SCHEDULE")
+    #print("PRE-SCHEDULE")
     response = dbr_servicer.Schedule(proto_dbr, None)
-    print("POST-SCHEDULE")
+    #print("POST-SCHEDULE")
     
     if db_id := req_data.get('id'):
-        print(db_id)
+        #print(db_id)
         dbr_statuses[db_id] = {"status": DBRStatus.DBR_RUNNING, "env": None}
         with open(f"{ROOT_DIR}/dumps/{db_id}.dump", "w") as f:
             f.write("")
@@ -59,7 +59,7 @@ def set_dbr_status():
 @app.route('/check', methods=['GET'])
 def check_dbr_status():
     db_id = request.args.get("id")
-    print(db_id, db_id in dbr_statuses)
+    #print(db_id, db_id in dbr_statuses)
     if not db_id:
         return jsonify({"error": "No id provided"}), 400
     if db_id in dbr_statuses:

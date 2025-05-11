@@ -17,7 +17,7 @@ DB_CHANNEL = grpc.insecure_channel(db_url)
 DB_STUB = database_pb2_grpc.DatabaseStub(DB_CHANNEL)
 
 def get_candidate_locations(placement_mode: Placement, dbr, shard_locations):
-    print("IN", LOCAL_REGION, dbr.predecessor_location)
+    #print("IN", LOCAL_REGION, dbr.predecessor_location)
     previous_location = dbr.predecessor_location or LOCAL_REGION
     
     candidate_locations = set([previous_location])
@@ -29,20 +29,20 @@ def get_candidate_locations(placement_mode: Placement, dbr, shard_locations):
     # NOTE: this is for the very first invocation from an external client ip
     # where the "predecessor" needs to be the hostname of the orchestrator itself
     if placement_mode == Placement.SMART:
-        print("smart placement")
+        #print("smart placement")
         # candidate locations approach, all hosts
         # compares all access locs + client/prev dbr loc for best 
         candidate_locations.update(shard_locations)
 
     if placement_mode == Placement.BRUTE:
-        print("brute placement")
+        #print("brute placement")
         # TODO: compares each possible reigion latency to access locs
         # vectorization for speed up?
         candidate_locations = set(REGION_HOSTNAME_MAPPINGS.keys())
 
-    print("candidate locations: ", candidate_locations)
+    #print("candidate locations: ", candidate_locations)
     assert len(candidate_locations) > 0
-    print("PREV LOC", previous_location)
+    #print("PREV LOC", previous_location)
     return candidate_locations, previous_location
 
 
@@ -57,11 +57,11 @@ def placeDBR(dbr, place: Placement):
     assert len(shard_hostnames) > 0
     assert len(shard_locations) > 0
 
-    print("shard locations: ", shard_locations)
-    print("shard hostnames: ", shard_hostnames)
+    #print("shard locations: ", shard_locations)
+    #print("shard hostnames: ", shard_hostnames)
 
     candidate_locations, previous_location = get_candidate_locations(place, dbr, shard_locations)
-    print("candidate locations: ", candidate_locations)
+    #print("candidate locations: ", candidate_locations)
 
     best_locations = []
     best_latency = float("inf")
@@ -74,7 +74,7 @@ def placeDBR(dbr, place: Placement):
         for shard_location in shard_locations:
             curr_query_latency = REGION_LATENCIES[candidate_location][shard_location]
             max_query_latency = max(curr_query_latency, max_query_latency)
-            print("curr query latency: ", curr_query_latency, "max query latency: ", max_query_latency)
+            #print("curr query latency: ", curr_query_latency, "max query latency: ", max_query_latency)
 
         curr_latency += max_query_latency
 
@@ -87,27 +87,27 @@ def placeDBR(dbr, place: Placement):
 
 # Returns all UNIQUE hostnames for queries of a DBR
 def get_shard_hostnames(queries): 
-    print("getting locations", queries)
+    #print("getting locations", queries)
     hostnames = set()
     for query in queries: 
         hosts = query_to_hostnames(query)
         hostnames.update(hosts)
-    print("ALL QUERY hostnames: ", hostnames)
+    #print("ALL QUERY hostnames: ", hostnames)
     return hostnames
 
 def query_to_hostnames(query):
-    print("IN QUERY TO LOCATION")
+    #print("IN QUERY TO LOCATION")
     query_type = query.WhichOneof('query_type')
     if query_type == "get_query":
         request = database_pb2.RegionRequest(key=query.get_query.key)
         response = DB_STUB.GetReadRegions(request)
-        print("OUT QUERY TO LOCATION", response.regions)
+        #print("OUT QUERY TO LOCATION", response.regions)
         return response.regions
     
     if query_type == "set_query":
         request = database_pb2.RegionRequest(key=query.set_query.key)
         response = DB_STUB.GetWriteRegion(request)
-        print("OUT QUERY TO LOCATION", [response.region])
+        #print("OUT QUERY TO LOCATION", [response.region])
         return [response.region]
 
     

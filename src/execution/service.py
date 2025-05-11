@@ -38,7 +38,7 @@ def serve():
     execution_address = f"0.0.0.0:{EXECUTION_PORT}"
     execution_server.add_insecure_port(execution_address)
     execution_server.start()
-    print(f"Execution server started, listening on port {EXECUTION_PORT}")
+    #print(f"Execution server started, listening on port {EXECUTION_PORT}")
 
     # Block until server is terminated, graceful shutdown
     execution_server.wait_for_termination()

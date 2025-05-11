@@ -28,22 +28,22 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
         # self.loop.call_soon_threadsafe(self.queue.put_nowait, dbreq)
         # self.queue.put_nowait(dbreq)
         self.loop.call_soon_threadsafe(self.queue.put_nowait, dbreq)
-        print("Received DBR")
+        #print("Received DBR")
         return dbr_pb2.DBRReply(success=True)
 
     async def queue_worker(self):
-        print("in queue")
+        #print("in queue")
         while True:
-            print("in loop")
+            #print("in loop")
             dbreq = await self.queue.get()
-            print("Popped DBR!", dbreq)
+            #print("Popped DBR!", dbreq)
             # await asyncio.create_task(self._handle_dbr(dbreq))
             await asyncio.to_thread(self._handle_dbr, dbreq)
         
     def _handle_dbr(self, dbreq):
-        print("Handling DBR", dbreq)
+        #print("Handling DBR", dbreq)
         locations = placeDBR(dbreq, dbreq.placement)
-        print(locations)
+        #print(locations)
         hostnames = []
         for loc in locations:
             hostnames.extend(REGION_HOSTNAME_MAPPINGS[loc])
@@ -68,7 +68,8 @@ class DBRServicer(dbr_pb2_grpc.DBReqServiceServicer):
         stub = dbr_pb2_grpc.DBReqServiceStub(channel)
         response = stub.Schedule(dbr) # Send DBR to placement server
         if response.success:
-            print(f"Placed DBR at {url} via {dbr.placement} placement mode")
+            #print(f"Placed DBR at {url} via {dbr.placement} placement mode")
+            pass
 
 
 dbr_servicer = DBRServicer()

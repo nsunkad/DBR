@@ -6,7 +6,6 @@ use std::sync::Arc;
 use crate::kv_store::InMemoryStore;
 use crate::types::Bytes;
 use crate::config::{NUM_INSTANCES, REPLICATION_FACTOR, PROPAGATE_WRITE};
-use os_info::OSInfo;
 
 use database::database_server::{Database};
 use database::{
@@ -25,6 +24,14 @@ pub struct DB {
 impl DB {
     pub fn new(store: Arc<InMemoryStore>, vms: Vec<String>) -> Self {
         Self { store, vms }
+    }
+
+    pub fn get_region(&self, key: &Bytes) -> String {
+        let mut hasher = DefaultHasher::new();
+        key.hash(&mut hasher);
+        let hash_value = hasher.finish();
+
+        self.vms[(hash_value % NUM_INSTANCES) as usize].clone()
     }
 }
 
@@ -49,16 +56,16 @@ impl Database for DB {
     async fn set(&self, request: Request<SetRequest>) -> Result<Response<SetReply>, Status> {
         let req = request.into_inner();
 
-        let os = OSInfo::new();
         let key_clone = req.key.clone();
         let value_clone = req.value.clone();
 
         let key = Bytes(key_clone.clone());
         let value = Bytes(value_clone.clone());
 
-        let hostname = os.hostname().unwrap();
+        // get env value of HOSTNAME
+        let hostname = std::env::var("HOSTNAME").unwrap();
         
-        if hostname != self.get_write_region(&key) {
+        if hostname != self.get_region(&key) {
             return Ok(Response::new(SetReply { success: false }));
         }
 
@@ -86,13 +93,5 @@ impl Database for DB {
         println!("Write region: {}", region);
 
         Ok(Response::new(WriteRegionReply { region }))        
-    }
-
-    fn get_region(&self, key: &Bytes) -> String {
-        let mut hasher = DefaultHasher::new();
-        key.hash(&mut hasher);
-        let hash_value = hasher.finish();
-
-        self.vms[(hash_value % NUM_INSTANCES) as usize].clone()
     }
 }
